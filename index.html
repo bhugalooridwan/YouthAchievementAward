@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Youth Achievement Award — Prototype</title>
+<style>
+:root{
+  --blue:#2A4D9B; --blue-dark:#1B3268; --blue-ink:#0F1F42; --blue-wash:#EDF1FA; --blue-line:#C9D5EE;
+  --gold:#F2C94C; --gold-deep:#B8860F; --gold-wash:#FDF6DF;
+  --emerald:#27AE60; --emerald-wash:#E7F7ED;
+  --grey:#F7F7F7; --white:#fff; --ink:#1E2536; --muted:#5D6A85; --line:#E2E6F0; --rose:#C0392B;
+  --rail:236px; --r:14px;
+  --ui:ui-rounded,"SF Pro Rounded","Segoe UI Variable","Segoe UI",Nunito,Roboto,system-ui,sans-serif;
+  --struck:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--grey);color:var(--ink);font-family:var(--ui);font-size:15.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;line-height:1.2;letter-spacing:-.01em;font-weight:750}
+h1{font-size:1.6rem}h2{font-size:1.18rem}h3{font-size:1rem}
+p{margin:0 0 .6em}
+a{color:var(--blue)}
+button{font-family:inherit;font-size:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- shell ---------- */
+#app{min-height:100vh}
+.shell{display:grid;grid-template-columns:var(--rail) 1fr;min-height:100vh}
+.rail{background:var(--blue-ink);color:#fff;padding:18px 14px 90px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;gap:10px;align-items:center;margin:4px 6px 20px}
+.brand .mark{width:34px;height:34px;border-radius:11px;background:var(--gold);color:var(--blue-ink);display:grid;place-items:center;font-family:var(--struck);font-weight:700;font-size:19px;flex:none}
+.brand b{display:block;font-size:.95rem;letter-spacing:-.01em}
+.brand span{display:block;font-size:.72rem;color:#9BB0DB}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;color:#C7D4EE;padding:9px 11px;border-radius:10px;cursor:pointer;font-weight:600}
+.nav button:hover{background:#1B2E58;color:#fff}
+.nav button[aria-current="page"]{background:var(--blue);color:#fff}
+.nav .glyph{width:20px;text-align:center;font-size:15px;flex:none}
+.nav .count{margin-left:auto;background:var(--gold);color:var(--blue-ink);font-size:.7rem;font-weight:800;padding:1px 7px;border-radius:9px}
+.railfoot{position:absolute;bottom:0;left:0;right:0;padding:14px;background:linear-gradient(transparent,var(--blue-ink) 40%)}
+.whoami{background:#16274C;border:1px solid #2A3F73;border-radius:12px;padding:9px 11px;font-size:.8rem;color:#9BB0DB}
+.whoami b{color:#fff;display:block;font-size:.86rem}
+.whoami button{margin-top:7px;background:none;border:1px solid #3C548C;color:#C7D4EE;border-radius:8px;padding:4px 9px;cursor:pointer;font-size:.75rem;font-weight:600}
+.whoami button:hover{border-color:var(--gold);color:var(--gold)}
+main{padding:26px 30px 70px;max-width:1120px}
+.pagehead{margin-bottom:20px}
+.pagehead p{color:var(--muted);max-width:66ch;margin:5px 0 0}
+.tabbar{display:none}
+
+/* ---------- primitives ---------- */
+.panel{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.panel+.panel{margin-top:14px}
+.panel>h2,.panel>h3{margin-bottom:4px}
+.panel .sub{color:var(--muted);font-size:.86rem;margin:0 0 14px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:10px}
+.divider{height:1px;background:var(--line);margin:14px 0}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.tiny{font-size:.76rem}
+.right{text-align:right}
+.nowrap{white-space:nowrap}
+
+.btn{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:#fff;border:0;border-radius:10px;padding:9px 15px;font-weight:700;cursor:pointer}
+.btn:hover{background:var(--blue-dark)}
+.btn.ghost{background:var(--white);color:var(--blue);border:1.5px solid var(--blue-line)}
+.btn.ghost:hover{background:var(--blue-wash)}
+.btn.go{background:var(--emerald)}.btn.go:hover{background:#1E8E4E}
+.btn.warn{background:var(--white);color:var(--rose);border:1.5px solid #EBC4BF}.btn.warn:hover{background:#FCF1F0}
+.btn.sm{padding:6px 11px;font-size:.83rem;border-radius:9px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.gold{background:var(--gold);color:#4A3708}.btn.gold:hover{background:#E5B92F}
+
+label.f{display:block;font-size:.83rem;font-weight:700;color:var(--blue-ink);margin:0 0 4px}
+input,select,textarea{width:100%;font-family:inherit;font-size:.92rem;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--white);color:var(--ink)}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);outline:none}
+textarea{min-height:70px;resize:vertical}
+.field{margin-bottom:12px}
+.checks{display:flex;flex-direction:column;gap:6px;border:1.5px solid var(--line);border-radius:10px;padding:10px;max-height:180px;overflow:auto}
+.checks label{display:flex;gap:9px;align-items:flex-start;font-size:.88rem;cursor:pointer}
+.checks input{width:auto;flex:none;margin-top:3px}
+
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:800;padding:3px 9px;border-radius:20px;background:var(--blue-wash);color:var(--blue-dark);border:1px solid var(--blue-line)}
+.chip.gold{background:var(--gold-wash);color:var(--gold-deep);border-color:#EBD48A}
+.chip.go{background:var(--emerald-wash);color:#1B7A44;border-color:#B6E2C6}
+.chip.flat{background:var(--grey);color:var(--muted);border-color:var(--line)}
+.chip.no{background:#FCF1F0;color:var(--rose);border-color:#EBC4BF}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+
+.stat{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:14px 15px}
+.stat b{display:block;font-family:var(--struck);font-size:1.85rem;line-height:1.05;color:var(--blue-ink);font-weight:400}
+.stat span{font-size:.8rem;color:var(--muted)}
+.stat.hi{border-color:#EBD48A;background:var(--gold-wash)}
+.stat.hi b{color:var(--gold-deep)}
+
+.bar{height:9px;border-radius:6px;background:var(--blue-wash);overflow:hidden;border:1px solid var(--blue-line)}
+.bar i{display:block;height:100%;background:var(--blue);border-radius:6px}
+.bar i.done{background:var(--emerald)}
+
+.list{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.list>*{padding:12px 14px;border-bottom:1px solid var(--line)}
+.list>*:last-child{border-bottom:0}
+.list .item:hover{background:#FCFDFF}
+.item{display:flex;gap:12px;align-items:center}
+.item .grow{min-width:0;flex:1}
+.item .grow b{display:block;overflow:hidden;text-overflow:ellipsis}
+.linkish{background:none;border:0;padding:0;color:var(--blue);font-weight:700;cursor:pointer;text-align:left}
+.linkish:hover{text-decoration:underline}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{text-align:left;font-size:.78rem;color:var(--muted);font-weight:800;padding:8px 10px;border-bottom:1.5px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.empty{border:1.5px dashed var(--blue-line);border-radius:12px;padding:22px;text-align:center;color:var(--muted);background:#FBFCFF}
+.empty b{display:block;color:var(--blue-ink);margin-bottom:3px}
+
+/* ---------- avatar ---------- */
+.av{border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;flex:none;background:var(--blue);width:40px;height:40px;font-size:.95rem}
+.av.lg{width:76px;height:76px;font-size:1.7rem}
+.av.sm{width:30px;height:30px;font-size:.78rem}
+
+/* ---------- medallions (the earned things) ---------- */
+.medal{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-family:var(--struck);font-size:1.5rem;font-weight:700;flex:none;position:relative;
+  background:radial-gradient(circle at 34% 28%,#FBE9A8,var(--gold) 58%,#D8A92B);color:#4A3708;
+  border:3px solid #fff;box-shadow:0 0 0 2px var(--gold-deep),0 4px 10px rgba(150,110,10,.28)}
+.medal.locked{background:var(--white);color:#AEB7CA;border-color:#fff;box-shadow:0 0 0 2px var(--line);font-size:1.15rem}
+.medal.sm{width:44px;height:44px;font-size:1.05rem;border-width:2.5px}
+.medal.lg{width:84px;height:84px;font-size:2rem}
+.medal .ribbon{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);background:var(--emerald);color:#fff;font-family:var(--ui);font-size:.6rem;font-weight:800;padding:1px 6px;border-radius:8px;border:2px solid #fff;white-space:nowrap}
+@keyframes strike{0%{transform:scale(2.2) rotate(-14deg);opacity:0}55%{transform:scale(.92) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+.struck{animation:strike .5s cubic-bezier(.2,1.4,.4,1) both}
+@media (prefers-reduced-motion:reduce){.struck{animation:none}}
+
+/* ---------- pathway trail ---------- */
+.trail{display:flex;flex-direction:column;align-items:stretch;gap:0}
+.camp{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:0 18px 18px;position:relative;overflow:hidden}
+.camp.locked{background:#FAFBFD}
+.camp .banner{display:flex;align-items:center;gap:12px;margin:0 -18px 16px;padding:12px 18px;background:var(--blue);color:#fff}
+.camp.locked .banner{background:#7C88A3}
+.camp .banner .num{font-family:var(--struck);font-size:1.5rem;line-height:1;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.5);display:grid;place-items:center;flex:none}
+.camp .banner b{font-size:1.02rem;display:block}
+.camp .banner span{font-size:.78rem;opacity:.85}
+.camp .banner .state{margin-left:auto;font-size:.75rem;font-weight:800;background:rgba(255,255,255,.18);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.35)}
+.nodes{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;position:relative}
+.nodes:before{content:"";position:absolute;top:32px;left:12%;right:12%;border-top:3px dashed var(--blue-line)}
+.node{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;position:relative;background:none;border:0;cursor:pointer;padding:2px}
+.node:disabled{cursor:default}
+.node .name{font-size:.82rem;font-weight:750;line-height:1.25}
+.node .bname{font-size:.72rem;color:var(--muted)}
+.node.done .bname{color:var(--gold-deep);font-weight:700}
+.node:not(:disabled):hover .medal{transform:translateY(-3px)}
+.medal{transition:transform .15s ease}
+@media (prefers-reduced-motion:reduce){.medal{transition:none}}
+.chest{display:flex;flex-direction:column;align-items:center;margin-top:14px}
+.chest .stem{width:3px;height:16px;background:repeating-linear-gradient(var(--blue-line) 0 5px,transparent 5px 9px)}
+.chest .box{border:2px solid var(--line);background:var(--white);border-radius:14px;padding:9px 16px;display:flex;gap:10px;align-items:center;color:var(--muted);font-weight:700;font-size:.86rem}
+.chest .box.won{border-color:var(--gold);background:var(--gold-wash);color:var(--gold-deep)}
+.link{height:26px;width:3px;background:repeating-linear-gradient(var(--blue-line) 0 5px,transparent 5px 9px);margin:0 auto}
+
+/* ---------- hero ---------- */
+.hero{background:var(--blue-ink);color:#fff;border-radius:18px;padding:20px 22px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.hero .av{border:3px solid rgba(255,255,255,.35);background:var(--blue)}
+.hero h1{font-size:1.45rem}
+.hero .who{flex:1;min-width:200px}
+.hero .who p{color:#A9BBDF;margin:3px 0 9px;font-size:.9rem}
+.ring{position:relative;width:104px;height:104px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .mid{position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1.1}
+.ring .mid b{font-family:var(--struck);font-size:1.5rem;font-weight:400}
+.ring .mid span{font-size:.66rem;color:#A9BBDF;display:block}
+.nudge{background:rgba(242,201,76,.14);border:1px solid rgba(242,201,76,.5);color:#FBE9A8;border-radius:12px;padding:9px 12px;font-size:.86rem}
+.nudge b{color:var(--gold)}
+
+/* ---------- toast + modal ---------- */
+#toasts{position:fixed;bottom:18px;right:18px;display:flex;flex-direction:column;gap:9px;z-index:60;max-width:min(340px,86vw)}
+.toast{background:var(--blue-ink);color:#fff;border-radius:12px;padding:11px 14px;box-shadow:0 8px 22px rgba(15,31,66,.28);font-size:.88rem;display:flex;gap:10px;align-items:flex-start}
+.toast.gold{background:var(--gold-wash);color:#4A3708;border:1.5px solid var(--gold)}
+.toast b{display:block}
+.scrim{position:fixed;inset:0;background:rgba(15,31,66,.5);display:grid;place-items:center;padding:18px;z-index:70}
+.modal{background:var(--white);border-radius:18px;padding:20px;width:min(560px,100%);max-height:88vh;overflow:auto}
+.modal .x{background:none;border:0;font-size:1.3rem;color:var(--muted);cursor:pointer;line-height:1}
+
+/* ---------- comments ---------- */
+.thread{display:flex;flex-direction:column;gap:9px;margin-top:10px}
+.cmt{display:flex;gap:9px}
+.cmt .body{background:var(--grey);border:1px solid var(--line);border-radius:12px;padding:8px 11px;font-size:.87rem;flex:1}
+.cmt .body b{font-size:.78rem;color:var(--blue-dark)}
+.cmt .body .tiny{color:var(--muted)}
+
+/* ---------- gate (sign-in) ---------- */
+.gate{min-height:100vh;display:grid;place-items:center;padding:26px;background:
+  radial-gradient(1100px 460px at 50% -12%,#2A4D9B 0%,#16274C 62%,#0F1F42 100%)}
+.gatebox{width:min(880px,100%);color:#fff}
+.gatebox>header{text-align:center;margin-bottom:22px}
+.gatebox h1{font-size:2rem}
+.gatebox header p{color:#A9BBDF;max-width:56ch;margin:8px auto 0}
+.roles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.rolecard{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.18);border-radius:16px;padding:15px;color:#fff;text-align:left;cursor:pointer}
+.rolecard:hover{border-color:var(--gold);background:rgba(255,255,255,.12)}
+.rolecard .g{font-size:1.5rem}
+.rolecard b{display:block;margin:7px 0 3px}
+.rolecard p{color:#A9BBDF;font-size:.8rem;margin:0}
+.gatefoot{margin-top:18px;text-align:center;color:#8EA3CF;font-size:.82rem}
+.picker{display:grid;gap:8px;margin-top:14px}
+.pick{display:flex;gap:11px;align-items:center;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.18);border-radius:13px;padding:10px 13px;color:#fff;cursor:pointer;text-align:left}
+.pick:hover{border-color:var(--gold)}
+.pick .grow b{display:block}
+.pick .grow span{font-size:.79rem;color:#A9BBDF}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+  .g4,.g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .roles{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:760px){
+  .shell{grid-template-columns:1fr}
+  .rail{display:none}
+  main{padding:16px 14px 96px}
+  .g2{grid-template-columns:1fr}
+  .nodes{grid-template-columns:repeat(2,1fr);gap:16px}
+  .nodes:before{display:none}
+  .tabbar{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--blue-ink);padding:6px 4px;z-index:50;box-shadow:0 -2px 14px rgba(15,31,66,.25)}
+  .tabbar button{flex:1;background:none;border:0;color:#9BB0DB;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.66rem;font-weight:700;padding:6px 2px;border-radius:10px;cursor:pointer;position:relative}
+  .tabbar button[aria-current="page"]{color:var(--gold)}
+  .tabbar .glyph{font-size:17px}
+  .tabbar .count{position:absolute;top:2px;right:22%;background:var(--gold);color:var(--blue-ink);font-size:.6rem;font-weight:800;padding:0 5px;border-radius:8px}
+  .mobar{display:flex;align-items:center;gap:10px;margin:-4px 0 14px}
+  .hero{padding:16px}
+  .ring{order:-1}
+}
+@media (min-width:761px){.mobar{display:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav class="tabbar" id="tabbar" aria-label="Sections"></nav>
+<div id="toasts" aria-live="polite"></div>
+<div id="layer"></div>
+<script>
+"use strict";
+/* ============================================================
+   1. PROGRAM STRUCTURE  (admin-editable — spec §5, UC-08)
+   4 levels x 4 developmental areas x objectives -> badge
+   Badge names are the virtue each area builds, with a plain gloss.
+   ============================================================ */
+const AREA_GLYPH = {Physical:"\uD83C\uDFC3", Social:"\uD83E\uDD1D", Intellectual:"\uD83D\uDCA1", Spiritual:"\uD83E\uDDED"};
+
+function area(id, name, letter, badge, gloss, objectives){
+  return {id:id, name:name, letter:letter, badge:badge, gloss:gloss,
+    objectives:objectives.map(function(t,i){ return {id:id+"-o"+(i+1), text:t}; })};
+}
+
+let PROGRAM = {levels:[
+  {id:1, title:"Level 1", camp:"Base Camp", ages:"Ages 5\u20139", areas:[
+    area("L1-PH","Physical","A","Quwwah","Strength",[
+      "Take part in 6 active play sessions after madrassah",
+      "Learn and show 3 warm-up stretches",
+      "Walk or run 1 km with your group without stopping"]),
+    area("L1-SO","Social","B","Salaam","Peace",[
+      "Give salaam and introduce yourself to someone new at a session",
+      "Help tidy the madrassah classroom with others",
+      "Play 3 games that need a partner"]),
+    area("L1-IN","Intellectual","C","Iqra","Read",[
+      "Read or listen to 4 short books",
+      "Learn the Arabic letters and write your name in Arabic",
+      "Build something by following instructions"]),
+    area("L1-SP","Spiritual","D","Nur","Light",[
+      "Memorise Surah al-Fatihah and 3 short surahs",
+      "Learn the steps of wudu and show them to your helper",
+      "Do one kind act each week for a month without being asked"])]},
+  {id:2, title:"Level 2", camp:"Ridge Trail", ages:"Ages 10\u201313", areas:[
+    area("L2-PH","Physical","E","Himmah","Resolve",[
+      "Keep a 6-week activity log",
+      "Complete a guided hike up Le Pouce with your group",
+      "Learn the rules of a new sport and play a full match"]),
+    area("L2-SO","Social","F","Ukhuwwah","Brotherhood",[
+      "Work in a team of four or more on a small project",
+      "Help prepare and serve at one iftar or community meal",
+      "Settle a disagreement with words, then talk it through with your mentor"]),
+    area("L2-IN","Intellectual","G","Ilm","Knowledge",[
+      "Complete a 4-week practical course, such as basic first aid or small electrics",
+      "Give a 5-minute talk on a topic you chose",
+      "Learn 20 new Arabic words and use them in your own sentences"]),
+    area("L2-SP","Spiritual","H","Sabr","Patience",[
+      "Keep the five daily salah for 6 weeks and log it",
+      "Memorise 5 new surahs and learn what they mean",
+      "Fast the days of Ramadan you are able to, as your guardian agrees"])]},
+  {id:3, title:"Level 3", camp:"High Pass", ages:"Ages 14\u201316", areas:[
+    area("L3-PH","Physical","I","Azm","Determination",[
+      "Train for and finish an endurance challenge, such as a 10 km trail run",
+      "Lead the warm-up for a younger group",
+      "Keep a 12-week training plan"]),
+    area("L3-SO","Social","J","Khidmah","Service",[
+      "Help run two sessions for the Level 1 group",
+      "Complete 20 hours of community service through the institution",
+      "Interview two people about their trade or profession"]),
+    area("L3-IN","Intellectual","K","Hikmah","Wisdom",[
+      "Complete a certified first aid course",
+      "Research a question and write up what you found",
+      "Learn a practical skill to a usable standard and teach it to one other person"]),
+    area("L3-SP","Spiritual","L","Taqwa","God-consciousness",[
+      "Study the seerah and present one episode to your group",
+      "Keep a reflection journal for a full term",
+      "Lead a short dhikr or reflection session for your group"])]},
+  {id:4, title:"Level 4", camp:"Summit", ages:"Ages 17\u201320", areas:[
+    area("L4-PH","Physical","M","Futuwwah","Noble courage",[
+      "Plan and complete a two-day hike and camp with your team",
+      "Coach a younger participant for 6 weeks",
+      "Meet a demanding fitness goal you set with your coach"]),
+    area("L4-SO","Social","N","Qiyadah","Leadership",[
+      "Lead a project with a team you recruited yourself",
+      "Represent the institution at a public or interfaith event",
+      "Mentor two Level 2 participants for a term"]),
+    area("L4-IN","Intellectual","O","Ibtikar","Innovation",[
+      "Design and build a project of your own, then present it to a panel",
+      "Complete an advanced practical course, such as domestic electrical wiring",
+      "Write a short reflection on what you would do differently"]),
+    area("L4-SP","Spiritual","P","Ihsan","Excellence",[
+      "Complete 40 hours of service, at least half of it unseen by others",
+      "Study a passage of the Qur'an with tafsir and share what you learnt",
+      "Write your award statement on the character you want to carry forward"])]}
+]};
+
+/* ============================================================
+   2. SEED DATA
+   ============================================================ */
+const GUIDELINES = [
+  {t:"Goals are agreed, not imposed", b:"Every goal is either proposed by the participant or acknowledged by them before it becomes active. A goal a young person has not acknowledged is not yet real work."},
+  {t:"One badge, one developmental area", b:"A badge is awarded only when every objective in that area has been met. Objectives are not partially credited \u2014 split them into smaller tasks instead."},
+  {t:"Spiritual objectives are confirmed by the madrassah teacher", b:"Hifz, salah logs and seerah presentations are signed off by the teacher who heard them, and that name goes in the supervisor field of the task record."},
+  {t:"Tasks carry the evidence", b:"Record the supervisor, location, dates and skills developed for each task. The task record is what an assessor reads at level review."},
+  {t:"Outings need a named supervisor", b:"Hikes, camps, courses and service away from the institution are only assigned once a supervisor is named on the task and the guardian has agreed."},
+  {t:"Levels unlock in order", b:"A participant only sees the next level once all four badges in the current level are earned. Do not set goals in locked areas."},
+  {t:"Under 13s need a guardian on file", b:"A guardian email address is required before an account for a participant under 13 is activated, and password resets are sent there."}
+];
+
+const state = {
+  session:null,           // {userId}
+  gateRole:null,          // role being picked at sign-in
+  view:"home",
+  focusParticipant:null,  // staff drill-down
+  focusGoal:null,
+  users:[
+    {id:"u-p1", role:"participant", name:"Maryam Peerbux",    age:8,  guardian:"r.peerbux@example.mu",  mentorId:"u-m1", helperIds:["u-h1"], joined:"2026-02-10", school:"Vacoas Government School", colour:"#2A4D9B"},
+    {id:"u-p2", role:"participant", name:"Bilal Jaunbaccus",  age:12, guardian:"s.jaunbaccus@example.mu", mentorId:"u-m1", helperIds:["u-h1"], joined:"2025-04-02", school:"Islamic Cultural College, Port Louis", colour:"#27AE60"},
+    {id:"u-p3", role:"participant", name:"Sumayyah Timol",    age:15, guardian:"", mentorId:"u-m2", helperIds:[], joined:"2024-09-16", school:"Doha Academy, Phoenix", colour:"#B8860F"},
+    {id:"u-p4", role:"participant", name:"Idriss Kodabux",    age:6,  guardian:"a.kodabux@example.mu", mentorId:"u-m2", helperIds:["u-h1"], joined:"2026-08-21", school:"Plaine Verte Government School", colour:"#8E44AD"},
+    {id:"u-m1", role:"mentor", name:"Nabihah Emrith",  title:"Mentor",         since:"2023", colour:"#1B3268"},
+    {id:"u-m2", role:"mentor", name:"Yusuf Hosany",    title:"Coach",          since:"2021", colour:"#1B3268"},
+    {id:"u-h1", role:"helper", name:"Riyad Joomun",    title:"Helper",         since:"2024", colour:"#5D6A85"},
+    {id:"u-a1", role:"admin",  name:"Fatimah Cassim",  title:"Programme Head", since:"2019", colour:"#0F1F42"}
+  ],
+  /* per participant: met objective ids, badges (area ids), level awards, current level */
+  progress:{
+    "u-p1":{level:1, met:["L1-PH-o1","L1-PH-o2","L1-PH-o3","L1-SO-o1","L1-SO-o2","L1-IN-o1"], badges:["L1-PH"], awards:[]},
+    "u-p2":{level:2, met:[
+        "L1-PH-o1","L1-PH-o2","L1-PH-o3","L1-SO-o1","L1-SO-o2","L1-SO-o3",
+        "L1-IN-o1","L1-IN-o2","L1-IN-o3","L1-SP-o1","L1-SP-o2","L1-SP-o3",
+        "L2-PH-o1","L2-PH-o2","L2-PH-o3","L2-IN-o1","L2-IN-o2"],
+      badges:["L1-PH","L1-SO","L1-IN","L1-SP","L2-PH"], awards:[1]},
+    "u-p3":{level:3, met:(function(){
+        const m=[]; ["L1","L2"].forEach(function(l){ ["PH","SO","IN","SP"].forEach(function(a){
+          for(let i=1;i<=3;i++) m.push(l+"-"+a+"-o"+i); }); });
+        m.push("L3-PH-o1","L3-PH-o2","L3-SO-o1"); return m; })(),
+      badges:["L1-PH","L1-SO","L1-IN","L1-SP","L2-PH","L2-SO","L2-IN","L2-SP"], awards:[1,2]},
+    "u-p4":{level:1, met:[], badges:[], awards:[]}
+  },
+  goals:[
+    {id:"g1", participantId:"u-p1", areaId:"L1-SO", title:"Saturday games and clean-up at the madrassah",
+     detail:"Partner games after Saturday class, then help put the room back in order.",
+     objectiveIds:["L1-SO-o2","L1-SO-o3"], status:"Active", proposedBy:"mentor", authorId:"u-m1",
+     acknowledged:true, createdAt:"2026-07-04",
+     comments:[{by:"u-m1", text:"Maryam, this follows on from your Quwwah badge. Same group, straight after class.", at:"2026-07-04"},
+               {by:"u-p1", text:"ok! Zainab is in that group too", at:"2026-07-05"}]},
+    {id:"g2", participantId:"u-p1", areaId:"L1-IN", title:"Read four books with Ammi",
+     detail:"Any four books. Tell your helper about your favourite one.",
+     objectiveIds:["L1-IN-o1"], status:"Completed", proposedBy:"participant", authorId:"u-p1",
+     acknowledged:true, createdAt:"2026-06-12", comments:[]},
+    {id:"g3", participantId:"u-p2", areaId:"L2-IN", title:"Basic first aid course, then teach it back",
+     detail:"Four Thursdays at the Red Cross hall in Beau Bassin, then a 5-minute talk to the group.",
+     objectiveIds:["L2-IN-o1","L2-IN-o2"], status:"Active", proposedBy:"participant", authorId:"u-p2",
+     acknowledged:true, createdAt:"2026-08-01",
+     comments:[{by:"u-m1", text:"Approved. Book the Thursday slot before it fills up.", at:"2026-08-02"}]},
+    {id:"g4", participantId:"u-p2", areaId:"L2-SO", title:"Serve at the community iftar with three friends",
+     detail:"Recruit a team of four, agree who does what in the kitchen, and log the hours.",
+     objectiveIds:["L2-SO-o1","L2-SO-o2"], status:"Proposed", proposedBy:"participant", authorId:"u-p2",
+     acknowledged:false, createdAt:"2026-08-29",
+     comments:[{by:"u-p2", text:"Masjid Noor kitchen on the last Friday. Can Riyad supervise?", at:"2026-08-29"}]},
+    {id:"g5", participantId:"u-p3", areaId:"L3-SO", title:"Co-run two Level 1 sessions",
+     detail:"Plan with Yusuf, then lead the warm-up and one activity for the Base Camp group.",
+     objectiveIds:["L3-SO-o1"], status:"Approved", proposedBy:"mentor", authorId:"u-m2",
+     acknowledged:false, createdAt:"2026-09-01",
+     comments:[{by:"u-m2", text:"Sumayyah, read this and acknowledge it so we can start next week.", at:"2026-09-01"}]},
+    {id:"g6", participantId:"u-p3", areaId:"L3-PH", title:"Twelve-week endurance plan",
+     detail:"Build up to the 10 km trail run in December. Log every session.",
+     objectiveIds:["L3-PH-o3"], status:"Active", proposedBy:"participant", authorId:"u-p3",
+     acknowledged:true, createdAt:"2026-07-19", comments:[]}
+  ],
+  tasks:[
+    {id:"t1", goalId:"g1", participantId:"u-p1", title:"Saturday partner games \u2014 week 1",
+     status:"Met", dateStarted:"2026-07-11", dateCompleted:"2026-07-11", supervisor:"Riyad Joomun",
+     location:"Madrassah hall, Plaine Verte", skills:["Cooperation","Listening"],
+     comments:[{by:"u-h1", text:"Paired with Zainab for skittles. Joined in for the whole hour.", at:"2026-07-11"}]},
+    {id:"t2", goalId:"g1", participantId:"u-p1", title:"Tidy the classroom with the group",
+     status:"Met", dateStarted:"2026-07-11", dateCompleted:"2026-07-18", supervisor:"Riyad Joomun",
+     location:"Madrassah hall, Plaine Verte", skills:["Responsibility"], comments:[]},
+    {id:"t3", goalId:"g1", participantId:"u-p1", title:"Help set out the mats before class",
+     status:"Assigned", dateStarted:"", dateCompleted:"", supervisor:"Riyad Joomun",
+     location:"Madrassah hall, Plaine Verte", skills:["Responsibility"], comments:[]},
+    {id:"t4", goalId:"g3", participantId:"u-p2", title:"First aid course \u2014 weeks 1 to 4",
+     status:"Met", dateStarted:"2026-08-06", dateCompleted:"2026-08-27", supervisor:"Nabihah Emrith",
+     location:"Red Cross hall, Beau Bassin", skills:["First aid","Persistence"],
+     comments:[{by:"u-p2", text:"The recovery position is easy but I keep losing count on the compressions.", at:"2026-08-20"},
+               {by:"u-m1", text:"Good \u2014 bring your workbook on Thursday and we will run the count together.", at:"2026-08-21"}]},
+    {id:"t5", goalId:"g3", participantId:"u-p2", title:"Give the 5-minute talk to the group",
+     status:"Assigned", dateStarted:"2026-09-03", dateCompleted:"", supervisor:"Nabihah Emrith",
+     location:"Islamic Cultural College, room 4", skills:["Public speaking"], comments:[]},
+    {id:"t6", goalId:"g6", participantId:"u-p3", title:"Weeks 1\u20134 training block",
+     status:"Met", dateStarted:"2026-07-22", dateCompleted:"2026-08-16", supervisor:"Yusuf Hosany",
+     location:"Trou aux Cerfs track", skills:["Endurance","Self-discipline"], comments:[]},
+    {id:"t7", goalId:"g6", participantId:"u-p3", title:"Weeks 5\u20138 training block",
+     status:"Assigned", dateStarted:"2026-08-19", dateCompleted:"", supervisor:"Yusuf Hosany",
+     location:"Trou aux Cerfs track", skills:["Endurance"], comments:[]}
+  ],
+  log:[
+    {at:"2026-09-01 09:12", who:"u-m2", what:"Set goal \u201cCo-run two Level 1 sessions\u201d for Sumayyah Timol"},
+    {at:"2026-08-29 17:40", who:"u-p2", what:"Proposed goal \u201cServe at the community iftar with three friends\u201d"},
+    {at:"2026-08-27 15:05", who:"u-m1", what:"Marked task \u201cFirst aid course \u2014 weeks 1 to 4\u201d as Met"},
+    {at:"2026-08-21 10:31", who:"u-a1", what:"Signed in"}
+  ]
+};
+
+/* ============================================================
+   3. HELPERS
+   ============================================================ */
+const $ = function(sel){ return document.querySelector(sel); };
+const esc = function(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); };
+const uid = function(p){ return p + Math.random().toString(36).slice(2,8); };
+const today = function(){ return new Date().toISOString().slice(0,10); };
+const stamp = function(){ return new Date().toISOString().slice(0,16).replace("T"," "); };
+const user = function(id){ return state.users.filter(function(u){ return u.id===id; })[0]; };
+const me = function(){ return user(state.session && state.session.userId); };
+const participants = function(){ return state.users.filter(function(u){ return u.role==="participant"; }); };
+const staff = function(){ return state.users.filter(function(u){ return u.role!=="participant"; }); };
+const prog = function(pid){ return state.progress[pid]; };
+const initials = function(n){ return n.split(" ").map(function(w){ return w[0]; }).slice(0,2).join(""); };
+const fmtDate = function(d){
+  if(!d) return "\u2014";
+  const p = d.split("-");
+  const mo = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return p[2].replace(/^0/,"") + " " + mo[+p[1]-1] + " " + p[0];
+};
+const allAreas = function(){
+  const out = [];
+  PROGRAM.levels.forEach(function(l){ l.areas.forEach(function(a){ out.push({level:l, area:a}); }); });
+  return out;
+};
+const findArea = function(areaId){
+  const hit = allAreas().filter(function(x){ return x.area.id===areaId; })[0];
+  return hit || null;
+};
+const objText = function(objId){
+  let t = objId;
+  allAreas().forEach(function(x){ x.area.objectives.forEach(function(o){ if(o.id===objId) t = o.text; }); });
+  return t;
+};
+const goalsOf = function(pid){ return state.goals.filter(function(g){ return g.participantId===pid; }); };
+const tasksOfGoal = function(gid){ return state.tasks.filter(function(t){ return t.goalId===gid; }); };
+const tasksOf = function(pid){ return state.tasks.filter(function(t){ return t.participantId===pid; }); };
+const goal = function(gid){ return state.goals.filter(function(g){ return g.id===gid; })[0]; };
+const task = function(tid){ return state.tasks.filter(function(t){ return t.id===tid; })[0]; };
+const isUnlocked = function(pid, levelId){ return levelId <= prog(pid).level; };
+
+function areaProgress(pid, areaId){
+  const a = findArea(areaId).area, met = prog(pid).met;
+  const done = a.objectives.filter(function(o){ return met.indexOf(o.id)>-1; }).length;
+  return {done:done, total:a.objectives.length, pct: a.objectives.length? Math.round(done/a.objectives.length*100):0};
+}
+function levelProgress(pid, levelId){
+  const lv = PROGRAM.levels.filter(function(l){ return l.id===levelId; })[0];
+  const earned = lv.areas.filter(function(a){ return prog(pid).badges.indexOf(a.id)>-1; }).length;
+  return {earned:earned, total:lv.areas.length, pct: Math.round(earned/lv.areas.length*100)};
+}
+function overallPct(pid){
+  const total = allAreas().length;
+  return Math.round(prog(pid).badges.length / total * 100);
+}
+
+/* ============================================================
+   4. LOG + TOASTS
+   ============================================================ */
+function logIt(what){
+  state.log.unshift({at:stamp(), who:(state.session? state.session.userId : "system"), what:what});
+}
+function toast(msg, kind){
+  const wrap = $("#toasts");
+  const el = document.createElement("div");
+  el.className = "toast" + (kind==="gold" ? " gold" : "");
+  el.innerHTML = msg;
+  wrap.appendChild(el);
+  setTimeout(function(){ el.remove(); }, 5200);
+}
+
+/* ============================================================
+   5. PROGRESSION ENGINE  (spec §4.3, UC-07)
+   badge  = every objective in a developmental area met
+   award  = every badge in a level earned -> next level unlocks
+   ============================================================ */
+let justStruck = [];   // area ids to animate on next render
+
+function runProgression(pid){
+  const p = prog(pid), pu = user(pid), news = [];
+  PROGRAM.levels.forEach(function(lv){
+    if(lv.id > p.level) return;                       // locked levels cannot award
+    lv.areas.forEach(function(a){
+      if(p.badges.indexOf(a.id)>-1) return;
+      const all = a.objectives.length>0 && a.objectives.every(function(o){ return p.met.indexOf(o.id)>-1; });
+      if(all){
+        p.badges.push(a.id);
+        justStruck.push(a.id);
+        news.push("Badge earned: <b>" + esc(a.badge) + "</b> \u2014 " + esc(a.name) + ", " + esc(lv.title));
+        logIt("Badge \u201c" + a.badge + "\u201d awarded to " + pu.name + " (" + a.name + ", " + lv.title + ")");
+      }
+    });
+    const complete = lv.areas.every(function(a){ return p.badges.indexOf(a.id)>-1; });
+    if(complete && p.awards.indexOf(lv.id)===-1){
+      p.awards.push(lv.id);
+      news.push("<b>" + esc(lv.title) + " Award</b> granted. " +
+        (lv.id<4 ? esc(PROGRAM.levels[lv.id].title) + " is now unlocked." : "The programme is complete."));
+      logIt(lv.title + " Award granted to " + pu.name + (lv.id<4 ? "; advanced to Level " + (lv.id+1) : "; programme complete"));
+      if(lv.id < 4 && p.level === lv.id) p.level = lv.id + 1;
+    }
+  });
+  news.forEach(function(n){ toast(n, "gold"); });
+  return news.length;
+}
+
+/* goal completes when every task under it is Met -> its objectives count as met */
+function refreshGoal(gid){
+  const g = goal(gid), ts = tasksOfGoal(gid);
+  if(g.status !== "Active" && g.status !== "Completed") return;
+  const allMet = ts.length>0 && ts.every(function(t){ return t.status==="Met"; });
+  if(allMet && g.status!=="Completed"){
+    g.status = "Completed";
+    const p = prog(g.participantId);
+    g.objectiveIds.forEach(function(o){ if(p.met.indexOf(o)===-1) p.met.push(o); });
+    logIt("Goal \u201c" + g.title + "\u201d completed for " + user(g.participantId).name);
+    toast("Goal completed: <b>" + esc(g.title) + "</b>");
+    runProgression(g.participantId);
+  } else if(!allMet && g.status==="Completed"){
+    g.status = "Active";
+  }
+}
+
+/* ============================================================
+   6. WORKFLOW ACTIONS  (spec §4.2, §9)
+   ============================================================ */
+const ACT = {};
+
+ACT.proposeGoal = function(){
+  const pid = me().id;
+  const areaId = $("#ng-area").value, title = $("#ng-title").value.trim(), detail = $("#ng-detail").value.trim();
+  const objs = Array.prototype.slice.call(document.querySelectorAll(".ng-obj:checked")).map(function(c){ return c.value; });
+  if(!title){ toast("Give your goal a name so your mentor knows what you want to do."); return; }
+  if(!objs.length){ toast("Pick at least one objective this goal will work towards."); return; }
+  state.goals.unshift({id:uid("g-"), participantId:pid, areaId:areaId, title:title, detail:detail,
+    objectiveIds:objs, status:"Proposed", proposedBy:"participant", authorId:pid, acknowledged:false,
+    createdAt:today(), comments:[]});
+  logIt("Proposed goal \u201c" + title + "\u201d");
+  toast("Sent to " + esc(user(me().mentorId).name) + " to approve.");
+  go("goals");
+};
+
+ACT.setGoal = function(){
+  const pid = state.focusParticipant;
+  const areaId = $("#sg-area").value, title = $("#sg-title").value.trim(), detail = $("#sg-detail").value.trim();
+  const objs = Array.prototype.slice.call(document.querySelectorAll(".sg-obj:checked")).map(function(c){ return c.value; });
+  if(!title){ toast("Add a goal title."); return; }
+  if(!objs.length){ toast("Link the goal to at least one objective \u2014 badges are awarded per objective."); return; }
+  state.goals.unshift({id:uid("g-"), participantId:pid, areaId:areaId, title:title, detail:detail,
+    objectiveIds:objs, status:"Approved", proposedBy:"mentor", authorId:me().id, acknowledged:false,
+    createdAt:today(), comments:[]});
+  logIt("Set goal \u201c" + title + "\u201d for " + user(pid).name);
+  toast("Goal set. " + esc(user(pid).name.split(" ")[0]) + " needs to acknowledge it before tasks can be assigned.");
+  render();
+};
+
+ACT.approveGoal = function(gid){
+  const g = goal(gid);
+  g.status = "Approved";
+  logIt("Approved goal \u201c" + g.title + "\u201d for " + user(g.participantId).name);
+  toast("Approved. Waiting for " + esc(user(g.participantId).name.split(" ")[0]) + " to acknowledge it.");
+  render();
+};
+
+ACT.declineGoal = function(gid){
+  const g = goal(gid);
+  const why = prompt("What should change about this goal?");
+  if(why===null) return;
+  g.status = "Proposed";
+  if(why.trim()) g.comments.push({by:me().id, text:why.trim(), at:today()});
+  logIt("Sent goal \u201c" + g.title + "\u201d back for changes");
+  toast("Sent back with your note.");
+  render();
+};
+
+ACT.acknowledgeGoal = function(gid){
+  const g = goal(gid);
+  g.acknowledged = true; g.status = "Active";
+  logIt("Acknowledged goal \u201c" + g.title + "\u201d");
+  toast("Goal is now active. Your mentor can add tasks to it.");
+  render();
+};
+
+ACT.assignTask = function(){
+  const gid = $("#nt-goal").value;
+  const g = goal(gid);
+  const t = {id:uid("t-"), goalId:gid, participantId:g.participantId, title:$("#nt-title").value.trim(),
+    status:"Assigned", dateStarted:"", dateCompleted:"", supervisor:$("#nt-sup").value.trim(),
+    location:$("#nt-loc").value.trim(),
+    skills:$("#nt-skills").value.split(",").map(function(s){ return s.trim(); }).filter(Boolean),
+    comments:[]};
+  if(!t.title){ toast("Name the task \u2014 it appears on the participant's list exactly as typed."); return; }
+  if(!t.supervisor){ toast("A supervisor must be named for the task record."); return; }
+  state.tasks.unshift(t);
+  logIt("Assigned task \u201c" + t.title + "\u201d to " + user(g.participantId).name);
+  toast("Task added to " + esc(g.title) + ".");
+  render();
+};
+
+ACT.startTask = function(tid){
+  const t = task(tid);
+  t.dateStarted = today();
+  logIt("Started task \u201c" + t.title + "\u201d");
+  toast("Started today. Your supervisor records the result.");
+  render();
+};
+
+ACT.recordTask = function(tid, result){
+  const t = task(tid);
+  t.status = result;
+  if(!t.dateStarted) t.dateStarted = today();
+  t.dateCompleted = today();
+  logIt("Recorded task \u201c" + t.title + "\u201d as " + result + " for " + user(t.participantId).name);
+  refreshGoal(t.goalId);
+  render();
+};
+
+ACT.reopenTask = function(tid){
+  const t = task(tid);
+  t.status = "Assigned"; t.dateCompleted = "";
+  logIt("Reopened task \u201c" + t.title + "\u201d");
+  refreshGoal(t.goalId);
+  render();
+};
+
+ACT.comment = function(kind, id){
+  const box = $("#cmt-" + id);
+  const text = box.value.trim();
+  if(!text) return;
+  const target = kind==="goal" ? goal(id) : task(id);
+  target.comments.push({by:me().id, text:text, at:today()});
+  logIt("Commented on " + kind + " \u201c" + target.title + "\u201d");
+  render();
+};
+
+ACT.saveDetails = function(pid){
+  const u = user(pid);
+  u.name = $("#pd-name").value.trim() || u.name;
+  u.age = +$("#pd-age").value || u.age;
+  u.school = $("#pd-school").value.trim();
+  u.guardian = $("#pd-guardian").value.trim();
+  if(u.age < 13 && !u.guardian){
+    toast("A guardian email is required for participants under 13.");
+    return;
+  }
+  logIt("Updated personal details for " + u.name);
+  toast("Details saved.");
+  render();
+};
+
+ACT.registerParticipant = function(){
+  const name = $("#rp-name").value.trim(), age = +$("#rp-age").value,
+        guardian = $("#rp-guardian").value.trim(), mentorId = $("#rp-mentor").value,
+        school = $("#rp-school").value.trim();
+  if(!name || !age){ toast("Name and age are both needed to create the account."); return; }
+  if(age < 13 && !guardian){ toast("Participants under 13 need a guardian email before the account is activated."); return; }
+  const id = uid("u-p");
+  const palette = ["#2A4D9B","#27AE60","#B8860F","#8E44AD","#16A085","#C0392B"];
+  state.users.push({id:id, role:"participant", name:name, age:age, guardian:guardian, mentorId:mentorId,
+    helperIds:[], joined:today(), school:school, colour:palette[state.users.length % palette.length]});
+  state.progress[id] = {level:1, met:[], badges:[], awards:[]};
+  logIt("Registered participant " + name + " and assigned " + user(mentorId).name);
+  toast("<b>" + esc(name) + "</b> registered at Level 1 with " + esc(user(mentorId).name) + ".");
+  render();
+};
+
+ACT.assignStaff = function(pid){
+  const u = user(pid);
+  u.mentorId = $("#as-mentor-" + pid).value;
+  const h = $("#as-helper-" + pid).value;
+  u.helperIds = h ? [h] : [];
+  logIt("Reassigned " + u.name + " to " + user(u.mentorId).name);
+  toast("Assignment updated.");
+  render();
+};
+
+ACT.addStaff = function(){
+  const name = $("#st-name").value.trim(), role = $("#st-role").value, title = $("#st-title").value.trim();
+  if(!name){ toast("Enter a name."); return; }
+  state.users.push({id:uid("u-s"), role:role, name:name, title:title || (role==="mentor"?"Mentor":"Helper"),
+    since:String(new Date().getFullYear()), colour:role==="mentor"?"#1B3268":"#5D6A85"});
+  logIt("Added " + role + " " + name);
+  toast("<b>" + esc(name) + "</b> added as " + esc(role) + ".");
+  render();
+};
+
+ACT.removeStaff = function(id){
+  const u = user(id);
+  const load = participants().filter(function(p){ return p.mentorId===id; });
+  if(load.length){ toast("Reassign " + load.length + " participant" + (load.length>1?"s":"") + " before removing " + esc(u.name) + "."); return; }
+  state.users = state.users.filter(function(x){ return x.id!==id; });
+  logIt("Removed " + u.role + " " + u.name);
+  render();
+};
+
+/* --- programme structure editing (UC-08) --- */
+ACT.renameArea = function(areaId){
+  const a = findArea(areaId).area;
+  const n = prompt("Developmental area name", a.name); if(n===null) return;
+  const b = prompt("Badge name awarded for this area", a.badge); if(b===null) return;
+  const gl = prompt("Plain-language meaning of the badge name", a.gloss); if(gl===null) return;
+  a.name = n.trim() || a.name; a.badge = b.trim() || a.badge; a.gloss = gl.trim() || a.gloss;
+  logIt("Renamed area to \u201c" + a.name + "\u201d with badge \u201c" + a.badge + "\u201d");
+  toast("Area updated for every participant.");
+  render();
+};
+ACT.addObjective = function(areaId){
+  const a = findArea(areaId).area;
+  const t = prompt("New objective"); if(!t || !t.trim()) return;
+  a.objectives.push({id:areaId + "-o" + (a.objectives.length+1) + "-" + uid(""), text:t.trim()});
+  logIt("Added an objective to " + a.name);
+  toast("Objective added. Badges in this area now need one more objective.");
+  participants().forEach(function(p){ runProgression(p.id); });
+  render();
+};
+ACT.removeObjective = function(areaId, objId){
+  const a = findArea(areaId).area;
+  if(a.objectives.length<=1){ toast("An area needs at least one objective."); return; }
+  a.objectives = a.objectives.filter(function(o){ return o.id!==objId; });
+  logIt("Removed an objective from " + a.name);
+  participants().forEach(function(p){ runProgression(p.id); });
+  render();
+};
+ACT.editObjective = function(areaId, objId){
+  const a = findArea(areaId).area;
+  const o = a.objectives.filter(function(x){ return x.id===objId; })[0];
+  const t = prompt("Objective", o.text); if(t===null) return;
+  o.text = t.trim() || o.text;
+  logIt("Edited an objective in " + a.name);
+  render();
+};
+
+/* --- session --- */
+ACT.signIn = function(id){
+  state.session = {userId:id};
+  state.gateRole = null;
+  state.view = "home";
+  state.modal = null;
+  state.focusParticipant = null;
+  logIt("Signed in");
+  render();
+};
+ACT.signOut = function(){
+  logIt("Signed out");
+  state.session = null; state.gateRole = null; state.focusParticipant = null; state.modal = null;
+  render();
+};
+function go(view){ state.view = view; window.scrollTo(0,0); render(); }
+function openParticipant(pid){ state.focusParticipant = pid; state.view = "person"; window.scrollTo(0,0); render(); }
+
+/* ============================================================
+   7. SHARED COMPONENTS
+   ============================================================ */
+function avatar(u, cls){
+  return '<span class="av ' + (cls||"") + '" style="background:' + (u.colour||"#2A4D9B") + '">' + esc(initials(u.name)) + '</span>';
+}
+
+function medallion(areaObj, earned, size, ribbon){
+  const cls = "medal " + (size||"") + (earned ? "" : " locked") + (earned && justStruck.indexOf(areaObj.id)>-1 ? " struck" : "");
+  const face = earned ? esc(areaObj.letter) : "\uD83D\uDD12";
+  const title = earned ? areaObj.badge + " badge earned" : areaObj.badge + " badge not yet earned";
+  return '<span class="' + cls + '" title="' + esc(title) + '" aria-label="' + esc(title) + '">' + face +
+    (earned && ribbon ? '<span class="ribbon">' + esc(ribbon) + "</span>" : "") + "</span>";
+}
+
+function ring(pct, label, sub){
+  const r = 46, c = 2*Math.PI*r, off = c - c*pct/100;
+  return '<div class="ring"><svg width="104" height="104" viewBox="0 0 104 104" aria-hidden="true">' +
+    '<circle cx="52" cy="52" r="' + r + '" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="9"/>' +
+    '<circle cx="52" cy="52" r="' + r + '" fill="none" stroke="#F2C94C" stroke-width="9" stroke-linecap="round" ' +
+    'stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '"/></svg>' +
+    '<div class="mid"><b>' + label + '</b><span>' + esc(sub) + "</span></div></div>";
+}
+
+function goalChip(g){
+  const map = {Proposed:"flat", Approved:"gold", Active:"", Completed:"go"};
+  const extra = g.status==="Approved" ? " \u00b7 needs acknowledgement" : "";
+  return '<span class="chip ' + map[g.status] + '"><span class="dot"></span>' + esc(g.status) + extra + "</span>";
+}
+function taskChip(t){
+  if(t.status==="Met") return '<span class="chip go">Met</span>';
+  if(t.status==="Not Met") return '<span class="chip no">Not met</span>';
+  return '<span class="chip ' + (t.dateStarted?"":"flat") + '">' + (t.dateStarted ? "In progress" : "Not started") + "</span>";
+}
+
+function thread(kind, id, comments, placeholder){
+  let h = '<div class="thread">';
+  comments.forEach(function(c){
+    const u = user(c.by) || {name:"Removed user", colour:"#5D6A85"};
+    h += '<div class="cmt">' + avatar(u, "sm") + '<div class="body"><b>' + esc(u.name) + '</b> ' +
+      '<span class="tiny">' + fmtDate(c.at) + "</span><div>" + esc(c.text) + "</div></div></div>";
+  });
+  h += '<div class="row" style="gap:8px;margin-top:2px">' +
+    '<input id="cmt-' + id + '" placeholder="' + esc(placeholder||"Add a comment") + '" style="flex:1">' +
+    '<button class="btn ghost sm" data-act="comment" data-kind="' + kind + '" data-id="' + id + '">Post</button></div></div>';
+  return h;
+}
+
+/* the pathway trail — spec §4.5 */
+function trail(pid, opts){
+  opts = opts || {};
+  const p = prog(pid);
+  let h = '<div class="trail">';
+  PROGRAM.levels.forEach(function(lv, i){
+    const unlocked = isUnlocked(pid, lv.id);
+    const lp = levelProgress(pid, lv.id);
+    const won = p.awards.indexOf(lv.id)>-1;
+    if(i) h += '<div class="link"></div>';
+    h += '<section class="camp' + (unlocked?"":" locked") + '">' +
+      '<header class="banner"><span class="num">' + lv.id + "</span>" +
+      "<span><b>" + esc(lv.camp) + "</b><span>" + esc(lv.title) + " \u00b7 " + esc(lv.ages) + "</span></span>" +
+      '<span class="state">' + (unlocked ? lp.earned + " of " + lp.total + " badges" : "Locked") + "</span></header>";
+    if(!unlocked){
+      h += '<p class="small muted" style="margin:0 0 12px">Earn all four badges in ' +
+        esc(PROGRAM.levels[lv.id-2].title) + " to open this camp.</p>";
+    }
+    h += '<div class="nodes">';
+    lv.areas.forEach(function(a){
+      const earned = p.badges.indexOf(a.id)>-1;
+      const ap = areaProgress(pid, a.id);
+      const clickable = unlocked;
+      h += "<" + (clickable?'button class="node' + (earned?" done":"") + '" data-act="area" data-id="' + a.id + '"' : 'div class="node"') + ">" +
+        medallion(a, earned, "", earned ? "\u2713" : "") +
+        '<span class="name">' + (AREA_GLYPH[a.name]||"") + " " + esc(a.name) + "</span>" +
+        '<span class="bname">' + (earned ? esc(a.badge) : unlocked ? ap.done + "/" + ap.total + " objectives" : esc(a.badge)) + "</span>" +
+        "</" + (clickable?"button":"div") + ">";
+    });
+    h += "</div>";
+    h += '<div class="chest"><span class="stem"></span><span class="box' + (won?" won":"") + '">' +
+      (won ? "\uD83C\uDFC5 " + esc(lv.title) + " Award earned" : "\uD83D\uDCE6 " + esc(lv.title) + " Award \u2014 " + (lp.total-lp.earned) + " badge" + ((lp.total-lp.earned)===1?"":"s") + " to go") +
+      "</span></div></section>";
+  });
+  const doneAll = p.awards.length===4;
+  h += '<div class="link"></div><section class="camp' + (doneAll?"":" locked") + '" style="text-align:center;padding:18px">' +
+    '<div class="row" style="justify-content:center;gap:12px">' +
+    '<span class="medal lg' + (doneAll?"":" locked") + '">' + (doneAll ? "\u2605" : "\uD83D\uDD12") + "</span>" +
+    "<div style=\"text-align:left\"><h3>Programme completion</h3><p class=\"small muted\" style=\"margin:2px 0 0\">" +
+    (doneAll ? "All four level awards earned." : "Awarded after all four level awards.") + "</p></div></div></section>";
+  return h + "</div>";
+}
+
+function nextStep(pid){
+  const gs = goalsOf(pid);
+  const ack = gs.filter(function(g){ return g.status==="Approved" && !g.acknowledged; })[0];
+  if(ack) return {text:"<b>" + esc(ack.title) + "</b> is waiting for you to acknowledge it.", view:"goals"};
+  const started = tasksOf(pid).filter(function(t){ return t.status==="Assigned" && !t.dateStarted; })[0];
+  if(started) return {text:"Next task: <b>" + esc(started.title) + "</b>. Tap it when you begin.", view:"tasks"};
+  const running = tasksOf(pid).filter(function(t){ return t.status==="Assigned"; })[0];
+  if(running) return {text:"<b>" + esc(running.title) + "</b> is in progress \u2014 " + esc(running.supervisor) + " records the result.", view:"tasks"};
+  const p = prog(pid);
+  let closest = null;
+  PROGRAM.levels.filter(function(l){ return l.id<=p.level; }).forEach(function(l){
+    l.areas.forEach(function(a){
+      if(p.badges.indexOf(a.id)>-1) return;
+      const ap = areaProgress(pid, a.id);
+      if(!closest || (ap.total-ap.done) < (closest.left)) closest = {area:a, left:ap.total-ap.done};
+    });
+  });
+  if(closest) return {text:"You are " + closest.left + " objective" + (closest.left===1?"":"s") +
+    " from the <b>" + esc(closest.area.badge) + "</b> badge. Propose a goal in " + esc(closest.area.name) + ".", view:"goals"};
+  return {text:"Everything on your pathway is complete. \uD83C\uDF89", view:"pathway"};
+}
+
+/* ============================================================
+   8. PARTICIPANT VIEWS
+   ============================================================ */
+function vParticipantHome(){
+  const u = me(), p = prog(u.id), ns = nextStep(u.id);
+  const lv = PROGRAM.levels.filter(function(l){ return l.id===p.level; })[0];
+  const lp = levelProgress(u.id, p.level);
+  const active = goalsOf(u.id).filter(function(g){ return g.status==="Active"; });
+  const waiting = goalsOf(u.id).filter(function(g){ return g.status==="Approved" && !g.acknowledged; });
+  const openTasks = tasksOf(u.id).filter(function(t){ return t.status==="Assigned"; });
+  const recent = p.badges.slice(-4).reverse();
+
+  let h = '<div class="hero">' + avatar(u, "lg") +
+    '<div class="who"><h1>Hello, ' + esc(u.name.split(" ")[0]) + "</h1>" +
+    "<p>" + esc(lv.camp) + " \u00b7 " + esc(lv.title) + " \u00b7 mentor " + esc(user(u.mentorId).name) + "</p>" +
+    '<div class="nudge">' + ns.text + " " +
+    '<button class="linkish" style="color:#F2C94C" data-act="go" data-id="' + ns.view + '">Take me there</button></div></div>' +
+    ring(lp.pct, lp.earned + "/" + lp.total, "badges in " + lv.title) + "</div>";
+
+  h += '<div class="grid g4" style="margin-top:14px">' +
+    '<div class="stat hi"><b>' + p.badges.length + '</b><span>badges earned of ' + allAreas().length + "</span></div>" +
+    '<div class="stat"><b>' + p.awards.length + '</b><span>level awards</span></div>' +
+    '<div class="stat"><b>' + active.length + '</b><span>active goals</span></div>' +
+    '<div class="stat"><b>' + openTasks.length + '</b><span>open tasks</span></div></div>';
+
+  if(waiting.length){
+    h += '<div class="panel" style="border-color:#EBD48A;background:var(--gold-wash)"><h2>Waiting for you</h2>' +
+      '<p class="sub">Your mentor set these. Read each one and acknowledge it to make it active.</p><div class="list">';
+    waiting.forEach(function(g){
+      h += '<div class="item"><div class="grow"><b>' + esc(g.title) + "</b>" +
+        '<span class="small muted">' + esc(findArea(g.areaId).area.name) + " \u00b7 set by " + esc(user(g.authorId).name) + "</span></div>" +
+        '<button class="btn go sm" data-act="acknowledgeGoal" data-id="' + g.id + '">Acknowledge</button></div>';
+    });
+    h += "</div></div>";
+  }
+
+  h += '<div class="grid g2" style="margin-top:14px"><div>';
+  h += '<div class="panel"><h2>Your goals</h2><p class="sub">What you are working on now.</p>';
+  if(active.length){
+    h += '<div class="list">';
+    active.forEach(function(g){
+      const ts = tasksOfGoal(g.id), met = ts.filter(function(t){ return t.status==="Met"; }).length;
+      const pct = ts.length ? Math.round(met/ts.length*100) : 0;
+      h += '<div class="item"><div class="grow"><b>' + esc(g.title) + "</b>" +
+        '<div class="bar" style="margin:6px 0 4px"><i style="width:' + pct + '%"></i></div>' +
+        '<span class="tiny muted">' + met + " of " + ts.length + " tasks met \u00b7 " + esc(findArea(g.areaId).area.name) + "</span></div>" +
+        '<button class="btn ghost sm" data-act="goal" data-id="' + g.id + '">Open</button></div>';
+    });
+    h += "</div>";
+  } else {
+    h += '<div class="empty"><b>No active goals yet</b>Propose something you would like to do next.<div style="margin-top:10px">' +
+      '<button class="btn sm" data-act="go" data-id="goals">Propose a goal</button></div></div>';
+  }
+  h += "</div></div><div>";
+
+  h += '<div class="panel"><h2>Badges just earned</h2><p class="sub">Your four most recent.</p>';
+  if(recent.length){
+    h += '<div class="row" style="gap:14px">';
+    recent.forEach(function(aid){
+      const fa = findArea(aid);
+      h += '<div style="text-align:center;width:76px">' + medallion(fa.area, true, "sm", "") +
+        '<div class="tiny" style="margin-top:6px;font-weight:700">' + esc(fa.area.badge) + "</div>" +
+        '<div class="tiny muted">' + esc(fa.level.title) + "</div></div>";
+    });
+    h += "</div>";
+  } else {
+    h += '<div class="empty"><b>Your badge case is empty</b>Finish every objective in one area to strike your first medal.</div>';
+  }
+  h += "</div>";
+
+  h += '<div class="panel"><h2>Tasks to do</h2><p class="sub">Tap a task when you start it.</p>';
+  if(openTasks.length){
+    h += '<div class="list">';
+    openTasks.slice(0,4).forEach(function(t){
+      h += '<div class="item"><div class="grow"><b>' + esc(t.title) + "</b>" +
+        '<span class="tiny muted">' + esc(t.location||"No location set") + " \u00b7 " + esc(t.supervisor) + "</span></div>" +
+        taskChip(t) + "</div>";
+    });
+    h += "</div>";
+  } else {
+    h += '<div class="empty"><b>Nothing outstanding</b>Your mentor adds tasks to your active goals.</div>';
+  }
+  h += "</div></div></div>";
+  return h;
+}
+
+function vParticipantPathway(){
+  const u = me();
+  return '<div class="pagehead"><h1>Your pathway</h1><p>Four camps, four badges in each. ' +
+    'Gold means earned. Tap a medal to see what it takes.</p></div>' + trail(u.id, {});
+}
+
+function vParticipantBadges(){
+  const u = me(), p = prog(u.id);
+  let h = '<div class="pagehead"><h1>Badge case</h1><p>' + p.badges.length + " of " + allAreas().length +
+    " badges struck, and " + p.awards.length + " of 4 level awards.</p></div>";
+  PROGRAM.levels.forEach(function(lv){
+    const unlocked = isUnlocked(u.id, lv.id);
+    h += '<div class="panel"><div class="spread"><div><h2>' + esc(lv.title) + " \u00b7 " + esc(lv.camp) + "</h2>" +
+      '<p class="sub" style="margin:2px 0 0">' + (p.awards.indexOf(lv.id)>-1 ? "Level award earned" :
+        unlocked ? levelProgress(u.id, lv.id).earned + " of 4 badges" : "Locked") + "</p></div>" +
+      (p.awards.indexOf(lv.id)>-1 ? '<span class="chip gold">\uD83C\uDFC5 Level award</span>' : "") + "</div>" +
+      '<div class="grid g4" style="margin-top:14px">';
+    lv.areas.forEach(function(a){
+      const earned = p.badges.indexOf(a.id)>-1;
+      const ap = areaProgress(u.id, a.id);
+      h += '<div style="text-align:center">' + medallion(a, earned, "", earned?"\u2713":"") +
+        '<div style="margin-top:9px;font-weight:750">' + esc(a.badge) + "</div>" +
+        '<div class="tiny muted">' + esc(a.gloss) + " \u00b7 " + esc(a.name) + "</div>" +
+        '<div class="bar" style="margin-top:7px"><i class="' + (earned?"done":"") + '" style="width:' + ap.pct + '%"></i></div>' +
+        '<div class="tiny muted" style="margin-top:4px">' + ap.done + "/" + ap.total + " objectives</div></div>";
+    });
+    h += "</div></div>";
+  });
+  return h;
+}
+
+function vParticipantGoals(){
+  const u = me();
+  const gs = goalsOf(u.id);
+  const unlockedAreas = allAreas().filter(function(x){ return isUnlocked(u.id, x.level.id); });
+  let h = '<div class="pagehead"><h1>Goals</h1><p>Anything you propose goes to ' + esc(user(u.mentorId).name) +
+    ' first. Goals your mentor sets need your acknowledgement before they start.</p></div>';
+
+  h += '<div class="panel"><h2>Propose a goal</h2><p class="sub">Pick the area, say what you want to do, and tick the objectives it covers.</p>' +
+    '<div class="grid g2"><div>' +
+    '<div class="field"><label class="f" for="ng-area">Developmental area</label><select id="ng-area" data-act="ngArea">';
+  unlockedAreas.forEach(function(x){
+    h += '<option value="' + x.area.id + '">' + esc(x.level.title) + " \u00b7 " + esc(x.area.name) + " (" + esc(x.area.badge) + ")</option>";
+  });
+  h += "</select></div>" +
+    '<div class="field"><label class="f" for="ng-title">What do you want to do?</label>' +
+    '<input id="ng-title" placeholder="e.g. Swim every Tuesday for six weeks"></div>' +
+    '<div class="field"><label class="f" for="ng-detail">Any details</label>' +
+    '<textarea id="ng-detail" placeholder="Where, when, who is helping you"></textarea></div>' +
+    '</div><div><div class="field"><label class="f">Objectives this goal works towards</label>' +
+    '<div class="checks" id="ng-objs">' + objChecks(u.id, unlockedAreas[0].area.id, "ng-obj") + "</div></div>" +
+    '<button class="btn" data-act="proposeGoal">Send to mentor</button></div></div></div>';
+
+  h += '<div class="panel"><h2>All your goals</h2><p class="sub">Proposed, approved, active and completed.</p>';
+  if(!gs.length){
+    h += '<div class="empty"><b>Nothing here yet</b>Propose your first goal above.</div>';
+  } else {
+    h += '<div class="list">';
+    gs.forEach(function(g){
+      const ts = tasksOfGoal(g.id);
+      h += '<div class="item"><div class="grow"><b>' + esc(g.title) + "</b>" +
+        '<div class="row" style="gap:7px;margin-top:4px">' + goalChip(g) +
+        '<span class="chip flat">' + esc(findArea(g.areaId).area.name) + "</span>" +
+        '<span class="tiny muted">' + ts.length + " task" + (ts.length===1?"":"s") + " \u00b7 " +
+        (g.proposedBy==="participant"?"you proposed this":"set by " + esc(user(g.authorId).name)) + "</span></div></div>" +
+        (g.status==="Approved" && !g.acknowledged
+          ? '<button class="btn go sm" data-act="acknowledgeGoal" data-id="' + g.id + '">Acknowledge</button>'
+          : '<button class="btn ghost sm" data-act="goal" data-id="' + g.id + '">Open</button>') + "</div>";
+    });
+    h += "</div>";
+  }
+  return h + "</div>";
+}
+
+function objChecks(pid, areaId, cls){
+  const a = findArea(areaId).area, met = prog(pid).met;
+  const claimed = {};
+  goalsOf(pid).forEach(function(g){
+    if(g.status!=="Proposed") g.objectiveIds.forEach(function(o){ claimed[o] = g.title; });
+  });
+  return a.objectives.map(function(o){
+    const done = met.indexOf(o.id)>-1;
+    const busy = !done && claimed[o.id];
+    return "<label" + (done?' style="opacity:.55"':"") + '><input type="checkbox" class="' + cls + '" value="' + o.id + '"' +
+      (done?" disabled":"") + "><span>" + esc(o.text) +
+      (done ? ' <span class="chip go" style="margin-left:4px">met</span>' : "") +
+      (busy ? ' <span class="tiny muted">\u2014 already in \u201c' + esc(busy) + '\u201d</span>' : "") +
+      "</span></label>";
+  }).join("");
+}
+
+function vParticipantTasks(){
+  const u = me(), ts = tasksOf(u.id);
+  let h = '<div class="pagehead"><h1>Tasks and challenges</h1><p>Your supervisor records the result. ' +
+    'Everything logged here counts as your evidence at level review.</p></div>';
+  if(!ts.length) return h + '<div class="empty"><b>No tasks yet</b>Tasks appear once a goal is active.</div>';
+  const order = {Assigned:0, "Not Met":1, Met:2};
+  ts.slice().sort(function(a,b){ return order[a.status]-order[b.status]; }).forEach(function(t){
+    const g = goal(t.goalId);
+    h += '<div class="panel"><div class="spread"><div><h3>' + esc(t.title) + "</h3>" +
+      '<p class="sub" style="margin:3px 0 0">' + esc(g?g.title:"\u2014") + "</p></div>" + taskChip(t) + "</div>" +
+      '<div class="divider"></div><div class="grid g4">' +
+      field("Started", fmtDate(t.dateStarted)) + field("Completed", fmtDate(t.dateCompleted)) +
+      field("Supervisor", t.supervisor||"\u2014") + field("Location", t.location||"\u2014") + "</div>" +
+      '<div style="margin-top:12px"><div class="tiny muted">Skills developed</div><div class="row" style="margin-top:5px">' +
+      (t.skills.length ? t.skills.map(function(s){ return '<span class="chip">' + esc(s) + "</span>"; }).join("") : '<span class="small muted">None recorded</span>') +
+      "</div></div>";
+    if(t.status==="Assigned" && !t.dateStarted){
+      h += '<div style="margin-top:12px"><button class="btn go sm" data-act="startTask" data-id="' + t.id + '">I have started this</button></div>';
+    }
+    h += thread("task", t.id, t.comments, "Tell your mentor how it went") + "</div>";
+  });
+  return h;
+}
+
+function field(label, value){
+  return '<div><div class="tiny muted">' + esc(label) + '</div><div style="font-weight:700">' + esc(value) + "</div></div>";
+}
+
+function vParticipantProfile(){
+  const u = me(), p = prog(u.id);
+  return '<div class="pagehead"><h1>Your details</h1><p>You can change these yourself. ' +
+    'Levels, badges and awards are set by the programme and cannot be edited here.</p></div>' +
+    '<div class="grid g2"><div class="panel"><h2>Personal details</h2><p class="sub">Editable by you, your mentor, your helper and the programme head.</p>' +
+    detailsForm(u) + '<button class="btn" data-act="saveDetails" data-id="' + u.id + '">Save changes</button></div>' +
+    '<div class="panel"><h2>Programme record</h2><p class="sub">Read-only.</p><div class="list">' +
+    ro("Current level", PROGRAM.levels.filter(function(l){ return l.id===p.level; })[0].title) +
+    ro("Badges earned", p.badges.length + " of " + allAreas().length) +
+    ro("Level awards", p.awards.length ? p.awards.map(function(i){ return "Level " + i; }).join(", ") : "None yet") +
+    ro("Mentor", user(u.mentorId).name) +
+    ro("Helper", u.helperIds.length ? user(u.helperIds[0]).name : "None assigned") +
+    ro("Joined", fmtDate(u.joined)) + "</div></div></div>";
+}
+function ro(k,v){ return '<div class="item"><div class="grow small muted">' + esc(k) + '</div><b class="small">' + esc(v) + "</b></div>"; }
+
+function detailsForm(u){
+  return '<div class="field"><label class="f" for="pd-name">Full name</label><input id="pd-name" value="' + esc(u.name) + '"></div>' +
+    '<div class="grid g2"><div class="field"><label class="f" for="pd-age">Age</label>' +
+    '<input id="pd-age" type="number" min="5" max="20" value="' + esc(u.age) + '"></div>' +
+    '<div class="field"><label class="f" for="pd-school">School or group</label><input id="pd-school" value="' + esc(u.school||"") + '"></div></div>' +
+    '<div class="field"><label class="f" for="pd-guardian">Guardian email' + (u.age<13?" (required under 13)":"") + '</label>' +
+    '<input id="pd-guardian" type="email" value="' + esc(u.guardian||"") + '" placeholder="guardian@example.com"></div>';
+}
+
+/* ============================================================
+   9. PERMISSIONS  (spec §3, §11)
+   ============================================================ */
+const can = {
+  seeAll:      function(){ return ["mentor","admin"].indexOf(me().role)>-1; },
+  setGoals:    function(){ return ["mentor","admin"].indexOf(me().role)>-1; },
+  assignTasks: function(){ return ["mentor","admin"].indexOf(me().role)>-1; },
+  recordTasks: function(){ return ["mentor","admin"].indexOf(me().role)>-1; },
+  editDetails: function(){ return ["mentor","admin","helper"].indexOf(me().role)>-1; },
+  editProgramme:function(){ return me().role==="admin"; },
+  manageUsers: function(){ return me().role==="admin"; }
+};
+function myParticipants(){
+  const u = me();
+  if(u.role==="admin") return participants();
+  if(u.role==="mentor") return participants().filter(function(p){ return p.mentorId===u.id; });
+  return participants().filter(function(p){ return (p.helperIds||[]).indexOf(u.id)>-1; });
+}
+function pendingApprovals(){
+  const mine = myParticipants().map(function(p){ return p.id; });
+  return state.goals.filter(function(g){ return g.status==="Proposed" && mine.indexOf(g.participantId)>-1; });
+}
+
+/* ============================================================
+   10. ROSTER + APPROVALS
+   ============================================================ */
+function vRoster(){
+  const list = myParticipants(), u = me();
+  const all = state.users.filter(function(x){ return x.role==="participant"; });
+  const scope = u.role==="admin" ? "Every participant on the programme" :
+                u.role==="mentor" ? "The participants you mentor" : "The participants you help with";
+  let h = '<div class="pagehead"><h1>' + (u.role==="helper"?"Your participants":"Participants") + "</h1><p>" + esc(scope) +
+    (u.role==="mentor" ? ". You can also open any other participant's profile from the programme search below." : ".") + "</p></div>";
+
+  if(u.role!=="helper"){
+    const tasksOpen = state.tasks.filter(function(t){ return t.status==="Assigned" && list.map(function(p){return p.id;}).indexOf(t.participantId)>-1; }).length;
+    h += '<div class="grid g4">' +
+      '<div class="stat"><b>' + list.length + '</b><span>participants</span></div>' +
+      '<div class="stat' + (pendingApprovals().length?" hi":"") + '"><b>' + pendingApprovals().length + '</b><span>goals awaiting approval</span></div>' +
+      '<div class="stat"><b>' + tasksOpen + '</b><span>tasks in progress</span></div>' +
+      '<div class="stat"><b>' + list.reduce(function(n,p){ return n + prog(p.id).badges.length; },0) + '</b><span>badges earned in your group</span></div></div>';
+  }
+
+  h += '<div class="panel" style="margin-top:14px"><h2>' + (u.role==="helper"?"Assigned to you":"Your group") + "</h2>" +
+    '<p class="sub">Progress is badges earned in the participant\u2019s current level.</p>';
+  if(!list.length){
+    h += '<div class="empty"><b>No participants assigned</b>The programme head assigns participants to you.</div>';
+  } else {
+    h += '<div class="list">';
+    list.forEach(function(p){
+      const pr = prog(p.id), lp = levelProgress(p.id, pr.level);
+      const waiting = goalsOf(p.id).filter(function(g){ return g.status==="Proposed"; }).length;
+      h += '<div class="item">' + avatar(p) + '<div class="grow"><b>' + esc(p.name) + "</b>" +
+        '<span class="tiny muted">Age ' + p.age + " \u00b7 " + esc(PROGRAM.levels[pr.level-1].camp) + " \u00b7 " +
+        pr.badges.length + " badge" + (pr.badges.length===1?"":"s") + "</span>" +
+        '<div class="bar" style="margin-top:6px;max-width:260px"><i style="width:' + lp.pct + '%"></i></div></div>' +
+        (waiting ? '<span class="chip gold">' + waiting + " to approve</span>" : "") +
+        '<button class="btn ghost sm" data-act="person" data-id="' + p.id + '">Open</button></div>';
+    });
+    h += "</div>";
+  }
+  h += "</div>";
+
+  if(u.role==="mentor" && all.length>list.length){
+    h += '<div class="panel"><h2>Other participants</h2><p class="sub">Viewable, but goals and tasks stay with their own mentor.</p><div class="list">';
+    all.filter(function(p){ return list.indexOf(p)===-1; }).forEach(function(p){
+      h += '<div class="item">' + avatar(p, "sm") + '<div class="grow"><b class="small">' + esc(p.name) +
+        '</b><span class="tiny muted">Mentor ' + esc(user(p.mentorId).name) + "</span></div>" +
+        '<button class="linkish small" data-act="person" data-id="' + p.id + '">View profile</button></div>';
+    });
+    h += "</div></div>";
+  }
+  return h;
+}
+
+function vApprovals(){
+  const pend = pendingApprovals();
+  let h = '<div class="pagehead"><h1>Goal approvals</h1><p>Goals your participants proposed. ' +
+    'Approving sends it back for their acknowledgement \u2014 it only becomes active once they accept it.</p></div>';
+  if(!pend.length) return h + '<div class="empty"><b>Nothing waiting</b>Proposed goals land here as soon as a participant sends one.</div>';
+  pend.forEach(function(g){
+    const p = user(g.participantId), fa = findArea(g.areaId);
+    h += '<div class="panel"><div class="spread"><div class="row">' + avatar(p) +
+      "<div><h3>" + esc(g.title) + '</h3><span class="small muted">' + esc(p.name) + " \u00b7 " +
+      esc(fa.level.title) + " " + esc(fa.area.name) + " \u00b7 proposed " + fmtDate(g.createdAt) + "</span></div></div>" +
+      '<span class="chip flat">Proposed</span></div>';
+    if(g.detail) h += '<p class="small" style="margin-top:10px">' + esc(g.detail) + "</p>";
+    h += '<div class="divider"></div><div class="tiny muted">Objectives it would close</div><ul class="small" style="margin:6px 0 0;padding-left:18px">' +
+      g.objectiveIds.map(function(o){ return "<li>" + esc(objText(o)) + "</li>"; }).join("") + "</ul>" +
+      thread("goal", g.id, g.comments, "Add a note for " + user(g.participantId).name.split(" ")[0]) +
+      '<div class="row" style="margin-top:12px"><button class="btn go" data-act="approveGoal" data-id="' + g.id + '">Approve goal</button>' +
+      '<button class="btn warn" data-act="declineGoal" data-id="' + g.id + '">Send back with changes</button></div></div>';
+  });
+  return h;
+}
+
+/* ============================================================
+   11. PARTICIPANT DRILL-DOWN (staff)
+   ============================================================ */
+function vPerson(){
+  const p = user(state.focusParticipant);
+  if(!p) return vRoster();
+  const pr = prog(p.id), lp = levelProgress(p.id, pr.level);
+  const mineToManage = me().role==="admin" || p.mentorId===me().id;
+
+  let h = '<button class="linkish" data-act="go" data-id="roster" style="margin-bottom:12px">\u2190 Back to participants</button>';
+  h += '<div class="hero">' + avatar(p, "lg") + '<div class="who"><h1>' + esc(p.name) + "</h1>" +
+    "<p>Age " + p.age + " \u00b7 " + esc(PROGRAM.levels[pr.level-1].camp) + " \u00b7 joined " + fmtDate(p.joined) +
+    " \u00b7 mentor " + esc(user(p.mentorId).name) + "</p>" +
+    '<div class="row"><span class="chip gold">' + pr.badges.length + " badges</span>" +
+    '<span class="chip">' + pr.awards.length + " level awards</span>" +
+    '<span class="chip">' + goalsOf(p.id).filter(function(g){ return g.status==="Active"; }).length + " active goals</span>" +
+    (p.age<13 ? '<span class="chip ' + (p.guardian?"go":"no") + '">Guardian ' + (p.guardian?"on file":"missing") + "</span>" : "") +
+    "</div></div>" + ring(lp.pct, lp.earned + "/" + lp.total, "badges in level " + pr.level) + "</div>";
+
+  if(!mineToManage){
+    h += '<div class="panel" style="margin-top:14px;border-color:#EBD48A;background:var(--gold-wash)">' +
+      '<p class="small" style="margin:0">You are viewing this profile. Goals and tasks are managed by ' +
+      esc(user(p.mentorId).name) + '.</p></div>';
+  }
+
+  /* goals */
+  h += '<div class="panel" style="margin-top:14px"><h2>Goals</h2><p class="sub">Status runs Proposed \u2192 Approved \u2192 Active \u2192 Completed.</p>';
+  const gs = goalsOf(p.id);
+  if(!gs.length){ h += '<div class="empty"><b>No goals yet</b>Set the first one below, or wait for a proposal.</div>'; }
+  else {
+    h += '<div class="list">';
+    gs.forEach(function(g){
+      const ts = tasksOfGoal(g.id), met = ts.filter(function(t){ return t.status==="Met"; }).length;
+      h += '<div class="item"><div class="grow"><b>' + esc(g.title) + "</b>" +
+        '<div class="row" style="gap:7px;margin-top:4px">' + goalChip(g) +
+        '<span class="chip flat">' + esc(findArea(g.areaId).area.name) + "</span>" +
+        '<span class="tiny muted">' + met + "/" + ts.length + " tasks met</span></div></div>" +
+        (g.status==="Proposed" && mineToManage
+          ? '<button class="btn go sm" data-act="approveGoal" data-id="' + g.id + '">Approve</button>' : "") +
+        '<button class="btn ghost sm" data-act="goal" data-id="' + g.id + '">Open</button></div>';
+    });
+    h += "</div>";
+  }
+  h += "</div>";
+
+  /* set goal + assign task */
+  if(can.setGoals() && mineToManage){
+    const areas = allAreas().filter(function(x){ return isUnlocked(p.id, x.level.id); });
+    h += '<div class="grid g2"><div class="panel"><h2>Set a goal</h2>' +
+      '<p class="sub">A goal you set is pre-approved, but ' + esc(p.name.split(" ")[0]) + ' must acknowledge it before tasks can be added.</p>' +
+      '<div class="field"><label class="f" for="sg-area">Developmental area</label><select id="sg-area" data-act="sgArea">' +
+      areas.map(function(x){ return '<option value="' + x.area.id + '">' + esc(x.level.title) + " \u00b7 " + esc(x.area.name) + "</option>"; }).join("") +
+      "</select></div>" +
+      '<div class="field"><label class="f" for="sg-title">Goal title</label><input id="sg-title" placeholder="e.g. Six-week swimming block"></div>' +
+      '<div class="field"><label class="f" for="sg-detail">Description</label><textarea id="sg-detail" placeholder="What success looks like"></textarea></div>' +
+      '<div class="field"><label class="f">Objectives covered</label><div class="checks" id="sg-objs">' +
+      objChecks(p.id, areas[0].area.id, "sg-obj") + "</div></div>" +
+      '<button class="btn" data-act="setGoal">Set goal</button></div>';
+
+    const activeGoals = gs.filter(function(g){ return g.status==="Active"; });
+    h += '<div class="panel"><h2>Assign a task</h2><p class="sub">Tasks attach to an active goal and carry the evidence record.</p>';
+    if(!activeGoals.length){
+      h += '<div class="empty"><b>No active goal to attach to</b>A goal becomes active once ' + esc(p.name.split(" ")[0]) + " acknowledges it.</div>";
+    } else {
+      h += '<div class="field"><label class="f" for="nt-goal">Goal</label><select id="nt-goal">' +
+        activeGoals.map(function(g){ return '<option value="' + g.id + '">' + esc(g.title) + "</option>"; }).join("") + "</select></div>" +
+        '<div class="field"><label class="f" for="nt-title">Task or challenge</label><input id="nt-title" placeholder="e.g. Session 1 of 6"></div>' +
+        '<div class="grid g2"><div class="field"><label class="f" for="nt-sup">Supervisor</label><input id="nt-sup" value="' + esc(me().name) + '"></div>' +
+        '<div class="field"><label class="f" for="nt-loc">Location</label><input id="nt-loc" placeholder="Where it happens"></div></div>' +
+        '<div class="field"><label class="f" for="nt-skills">Skills developed</label><input id="nt-skills" placeholder="Comma separated, e.g. Teamwork, Planning"></div>' +
+        '<button class="btn" data-act="assignTask">Assign task</button>';
+    }
+    h += "</div></div>";
+  }
+
+  /* tasks */
+  const ts = tasksOf(p.id);
+  h += '<div class="panel"><h2>Task records</h2><p class="sub">Marking every task under a goal as met completes the goal and re-checks the badge.</p>';
+  if(!ts.length){ h += '<div class="empty"><b>No task records</b>Assign a task to start the evidence trail.</div>'; }
+  else {
+    h += "<table><thead><tr><th>Task</th><th>Goal</th><th>Dates</th><th>Supervisor</th><th>Status</th>" +
+      (can.recordTasks() && mineToManage ? "<th></th>" : "") + "</tr></thead><tbody>";
+    ts.forEach(function(t){
+      const g = goal(t.goalId);
+      h += "<tr><td><b>" + esc(t.title) + '</b><div class="tiny muted">' + esc(t.location||"No location") + "</div></td>" +
+        "<td>" + esc(g?g.title:"\u2014") + "</td>" +
+        '<td class="tiny">' + fmtDate(t.dateStarted) + '<div class="muted">' + fmtDate(t.dateCompleted) + "</div></td>" +
+        "<td>" + esc(t.supervisor) + "</td><td>" + taskChip(t) + "</td>";
+      if(can.recordTasks() && mineToManage){
+        h += '<td class="right nowrap">' + (t.status==="Assigned"
+          ? '<button class="btn go sm" data-act="recordTask" data-id="' + t.id + '" data-result="Met">Met</button> ' +
+            '<button class="btn warn sm" data-act="recordTask" data-id="' + t.id + '" data-result="Not Met">Not met</button>'
+          : '<button class="btn ghost sm" data-act="reopenTask" data-id="' + t.id + '">Reopen</button>') + "</td>";
+      }
+      h += "</tr>";
+    });
+    h += "</tbody></table>";
+  }
+  h += "</div>";
+
+  /* pathway */
+  h += '<div class="panel"><h2>Pathway</h2><p class="sub">What ' + esc(p.name.split(" ")[0]) + " sees, with objective counts.</p>" +
+    '<div style="margin-top:12px">' + trail(p.id, {}) + "</div></div>";
+
+  /* details */
+  if(can.editDetails()){
+    h += '<div class="panel"><h2>Personal details</h2><p class="sub">Mentors, coaches, helpers and the programme head may edit these.</p>' +
+      '<div class="grid g2"><div>' + detailsForm(p) +
+      '<button class="btn" data-act="saveDetails" data-id="' + p.id + '">Save changes</button></div><div>';
+    if(can.manageUsers()){
+      h += '<div class="field"><label class="f" for="as-mentor-' + p.id + '">Mentor or coach</label><select id="as-mentor-' + p.id + '">' +
+        state.users.filter(function(x){ return x.role==="mentor"; }).map(function(m){
+          return '<option value="' + m.id + '"' + (m.id===p.mentorId?" selected":"") + ">" + esc(m.name) + " (" + esc(m.title) + ")</option>"; }).join("") +
+        "</select></div>" +
+        '<div class="field"><label class="f" for="as-helper-' + p.id + '">Helper</label><select id="as-helper-' + p.id + '"><option value="">None</option>' +
+        state.users.filter(function(x){ return x.role==="helper"; }).map(function(m){
+          return '<option value="' + m.id + '"' + ((p.helperIds||[]).indexOf(m.id)>-1?" selected":"") + ">" + esc(m.name) + "</option>"; }).join("") +
+        "</select></div><button class=\"btn ghost\" data-act=\"assignStaff\" data-id=\"" + p.id + "\">Update assignment</button>";
+    } else {
+      h += '<div class="list">' + ro("Mentor", user(p.mentorId).name) +
+        ro("Helper", (p.helperIds||[]).length ? user(p.helperIds[0]).name : "None") +
+        ro("Guardian email", p.guardian || "Not on file") + "</div>";
+    }
+    h += "</div></div></div>";
+  }
+
+  /* admin achievement override */
+  if(can.editProgramme()){
+    h += '<div class="panel" style="border-color:#EBD48A"><h2>Adjust achievements</h2>' +
+      '<p class="sub">Programme head only. Ticking an objective re-runs the badge and level checks immediately.</p>';
+    PROGRAM.levels.filter(function(l){ return isUnlocked(p.id, l.id); }).forEach(function(l){
+      h += '<div class="tiny muted" style="margin:12px 0 6px">' + esc(l.title) + " \u00b7 " + esc(l.camp) + "</div><div class=\"grid g2\">";
+      l.areas.forEach(function(a){
+        h += '<div style="border:1px solid var(--line);border-radius:12px;padding:11px">' +
+          '<div class="row" style="gap:8px">' + medallion(a, pr.badges.indexOf(a.id)>-1, "sm", "") +
+          "<b class=\"small\">" + esc(a.name) + " \u00b7 " + esc(a.badge) + "</b></div><div class=\"checks\" style=\"border:0;padding:6px 0 0\">" +
+          a.objectives.map(function(o){
+            return "<label><input type=\"checkbox\" data-act=\"toggleObjective\" data-id=\"" + p.id + "\" data-obj=\"" + o.id + "\"" +
+              (pr.met.indexOf(o.id)>-1?" checked":"") + "><span>" + esc(o.text) + "</span></label>"; }).join("") +
+          "</div></div>";
+      });
+      h += "</div>";
+    });
+    h += "</div>";
+  }
+  return h;
+}
+
+/* ============================================================
+   12. GUIDELINES
+   ============================================================ */
+function vGuidelines(){
+  let h = '<div class="pagehead"><h1>Programme guidelines</h1><p>The rules the system enforces, and the practice behind them.</p></div>';
+  h += '<div class="panel">';
+  GUIDELINES.forEach(function(g, i){
+    h += (i?'<div class="divider"></div>':"") + "<h3>" + esc(g.t) + '</h3><p class="small muted" style="margin:4px 0 0;max-width:70ch">' + esc(g.b) + "</p>";
+  });
+  h += "</div>";
+  h += '<div class="panel"><h2>Goal workflow</h2><p class="sub">Every goal follows these steps in order.</p><ol class="small" style="padding-left:20px;margin:0">' +
+    ["Goal created by the mentor, coach or the participant",
+     "Status is Proposed",
+     "Mentor or coach approves it",
+     "Participant acknowledges it",
+     "Status becomes Active and tasks can be assigned",
+     "All tasks met completes the goal and re-checks the badge"].map(function(s){ return "<li>" + esc(s) + "</li>"; }).join("") +
+    "</ol></div>";
+  return h;
+}
+
+/* ============================================================
+   13. ADMIN
+   ============================================================ */
+function vAdminHome(){
+  const ps = participants();
+  const badges = ps.reduce(function(n,p){ return n + prog(p.id).badges.length; },0);
+  const awards = ps.reduce(function(n,p){ return n + prog(p.id).awards.length; },0);
+  const open = state.tasks.filter(function(t){ return t.status==="Assigned"; }).length;
+  const prop = state.goals.filter(function(g){ return g.status==="Proposed"; }).length;
+  const unack = state.goals.filter(function(g){ return g.status==="Approved" && !g.acknowledged; }).length;
+  const missing = ps.filter(function(p){ return p.age<13 && !p.guardian; });
+
+  let h = '<div class="pagehead"><h1>Programme overview</h1><p>Every participant, mentor, coach and helper across the four levels.</p></div>';
+  h += '<div class="grid g4">' +
+    '<div class="stat"><b>' + ps.length + '</b><span>participants</span></div>' +
+    '<div class="stat hi"><b>' + badges + '</b><span>badges awarded</span></div>' +
+    '<div class="stat"><b>' + awards + '</b><span>level awards</span></div>' +
+    '<div class="stat"><b>' + staff().length + '</b><span>mentors, coaches and helpers</span></div></div>';
+  h += '<div class="grid g3" style="margin-top:14px">' +
+    '<div class="stat"><b>' + prop + '</b><span>goals awaiting approval</span></div>' +
+    '<div class="stat"><b>' + unack + '</b><span>approved, not yet acknowledged</span></div>' +
+    '<div class="stat"><b>' + open + '</b><span>tasks in progress</span></div></div>';
+
+  if(missing.length){
+    h += '<div class="panel" style="border-color:#EBC4BF;background:#FCF1F0"><h2>Guardian email missing</h2>' +
+      '<p class="sub">Required for participants under 13 before password resets can be sent.</p><div class="list">' +
+      missing.map(function(p){ return '<div class="item">' + avatar(p, "sm") + '<div class="grow"><b class="small">' + esc(p.name) +
+        '</b><span class="tiny muted">Age ' + p.age + "</span></div>" +
+        '<button class="btn ghost sm" data-act="person" data-id="' + p.id + '">Add email</button></div>'; }).join("") + "</div></div>";
+  }
+
+  h += '<div class="panel"><h2>Participants by level</h2><p class="sub">Where the cohort sits today.</p>';
+  PROGRAM.levels.forEach(function(l){
+    const here = ps.filter(function(p){ return prog(p.id).level===l.id; });
+    const pct = ps.length ? Math.round(here.length/ps.length*100) : 0;
+    h += '<div style="margin-bottom:11px"><div class="spread"><span class="small"><b>' + esc(l.title) + "</b> \u00b7 " + esc(l.camp) +
+      '</span><span class="small muted">' + here.length + "</span></div>" +
+      '<div class="bar" style="margin-top:5px"><i style="width:' + Math.max(pct,2) + '%"></i></div></div>';
+  });
+  h += "</div>";
+  return h;
+}
+
+function vAdminPeople(){
+  let h = '<div class="pagehead"><h1>People</h1><p>Register participants, and manage the mentors, coaches and helpers who support them.</p></div>';
+  h += '<div class="grid g2"><div class="panel"><h2>Register a participant</h2>' +
+    '<p class="sub">Creates the account at Level 1 and assigns a mentor or coach.</p>' +
+    '<div class="field"><label class="f" for="rp-name">Full name</label><input id="rp-name" placeholder="First and last name"></div>' +
+    '<div class="grid g2"><div class="field"><label class="f" for="rp-age">Age</label><input id="rp-age" type="number" min="5" max="20" placeholder="5\u201320"></div>' +
+    '<div class="field"><label class="f" for="rp-school">School or group</label><input id="rp-school"></div></div>' +
+    '<div class="field"><label class="f" for="rp-guardian">Guardian email</label><input id="rp-guardian" type="email" placeholder="Required under 13"></div>' +
+    '<div class="field"><label class="f" for="rp-mentor">Mentor or coach</label><select id="rp-mentor">' +
+    state.users.filter(function(u){ return u.role==="mentor"; }).map(function(m){
+      const load = participants().filter(function(p){ return p.mentorId===m.id; }).length;
+      return '<option value="' + m.id + '">' + esc(m.name) + " \u00b7 " + load + " assigned</option>"; }).join("") +
+    '</select></div><button class="btn" data-act="registerParticipant">Create account</button></div>';
+
+  h += '<div class="panel"><h2>Add a mentor, coach or helper</h2><p class="sub">Helpers see only the participants assigned to them.</p>' +
+    '<div class="field"><label class="f" for="st-name">Full name</label><input id="st-name"></div>' +
+    '<div class="grid g2"><div class="field"><label class="f" for="st-role">Role</label><select id="st-role">' +
+    '<option value="mentor">Mentor or coach</option><option value="helper">Helper</option></select></div>' +
+    '<div class="field"><label class="f" for="st-title">Title shown</label><input id="st-title" placeholder="e.g. Coach"></div></div>' +
+    '<button class="btn" data-act="addStaff">Add to programme</button></div></div>';
+
+  h += '<div class="panel"><h2>Programme team</h2><p class="sub">Removing someone requires their participants to be reassigned first.</p><table>' +
+    "<thead><tr><th>Name</th><th>Role</th><th>Participants</th><th>Since</th><th></th></tr></thead><tbody>";
+  staff().forEach(function(s){
+    const load = participants().filter(function(p){ return p.mentorId===s.id || (p.helperIds||[]).indexOf(s.id)>-1; });
+    h += '<tr><td><div class="row" style="gap:8px">' + avatar(s, "sm") + "<b>" + esc(s.name) + "</b></div></td>" +
+      "<td>" + esc(s.title||s.role) + "</td><td>" + load.length + "</td><td>" + esc(s.since||"\u2014") + "</td>" +
+      '<td class="right">' + (s.role==="admin" ? '<span class="tiny muted">Programme head</span>' :
+        '<button class="btn warn sm" data-act="removeStaff" data-id="' + s.id + '">Remove</button>') + "</td></tr>";
+  });
+  h += "</tbody></table></div>";
+
+  h += '<div class="panel"><h2>Participant accounts</h2><p class="sub">Level, badges and who supports each account.</p><table>' +
+    "<thead><tr><th>Name</th><th>Age</th><th>Level</th><th>Badges</th><th>Mentor</th><th>Helper</th><th></th></tr></thead><tbody>";
+  participants().forEach(function(p){
+    const pr = prog(p.id);
+    h += '<tr><td><div class="row" style="gap:8px">' + avatar(p, "sm") + "<b>" + esc(p.name) + "</b></div></td>" +
+      "<td>" + p.age + "</td><td>" + pr.level + "</td><td>" + pr.badges.length + "</td>" +
+      "<td>" + esc(user(p.mentorId).name) + "</td><td>" + esc((p.helperIds||[]).length?user(p.helperIds[0]).name:"\u2014") + "</td>" +
+      '<td class="right"><button class="linkish small" data-act="person" data-id="' + p.id + '">Open</button></td></tr>';
+  });
+  return h + "</tbody></table></div>";
+}
+
+function vAdminStructure(){
+  let h = '<div class="pagehead"><h1>Programme structure</h1><p>Changes here apply to every participant. ' +
+    'Adding an objective to an area means anyone holding that badge keeps it, but new badges need the extra objective.</p></div>';
+  PROGRAM.levels.forEach(function(l){
+    h += '<div class="panel"><div class="spread"><div><h2>' + esc(l.title) + " \u00b7 " + esc(l.camp) + "</h2>" +
+      '<p class="sub" style="margin:2px 0 0">' + esc(l.ages) + " \u00b7 " + l.areas.length + " developmental areas</p></div>" +
+      '<span class="chip">' + l.areas.reduce(function(n,a){ return n+a.objectives.length; },0) + " objectives</span></div>";
+    l.areas.forEach(function(a){
+      h += '<div class="divider"></div><div class="spread"><div class="row" style="gap:10px">' +
+        medallion(a, true, "sm", "") + "<div><b>" + esc(a.name) + '</b><div class="tiny muted">Badge: ' + esc(a.badge) +
+        " (" + esc(a.gloss) + ") \u00b7 medal " + esc(a.letter) + "</div></div></div>" +
+        '<div class="row"><button class="btn ghost sm" data-act="renameArea" data-id="' + a.id + '">Rename</button>' +
+        '<button class="btn ghost sm" data-act="addObjective" data-id="' + a.id + '">Add objective</button></div></div>' +
+        '<div class="list" style="margin-top:10px">';
+      a.objectives.forEach(function(o){
+        const holders = participants().filter(function(p){ return prog(p.id).met.indexOf(o.id)>-1; }).length;
+        h += '<div class="item"><div class="grow small">' + esc(o.text) +
+          '<div class="tiny muted">' + holders + " participant" + (holders===1?"":"s") + " have met this</div></div>" +
+          '<button class="linkish small" data-act="editObjective" data-id="' + a.id + '" data-obj="' + o.id + '">Edit</button>' +
+          '<button class="linkish small" style="color:var(--rose)" data-act="removeObjective" data-id="' + a.id + '" data-obj="' + o.id + '">Remove</button></div>';
+      });
+      h += "</div>";
+    });
+    h += "</div>";
+  });
+  return h;
+}
+
+function vAdminReports(){
+  const ps = participants();
+  let h = '<div class="pagehead"><h1>Reports</h1><p>Completion across the cohort. Figures update as tasks are recorded.</p></div>';
+  h += '<div class="panel"><h2>Badge completion by participant</h2><p class="sub">Out of ' + allAreas().length + " badges in the whole programme.</p>";
+  ps.slice().sort(function(a,b){ return prog(b.id).badges.length - prog(a.id).badges.length; }).forEach(function(p){
+    const pr = prog(p.id), pct = overallPct(p.id);
+    h += '<div style="margin-bottom:12px"><div class="spread"><span class="row" style="gap:8px">' + avatar(p, "sm") +
+      "<b class=\"small\">" + esc(p.name) + '</b><span class="tiny muted">Level ' + pr.level + "</span></span>" +
+      '<span class="small muted">' + pr.badges.length + " \u00b7 " + pct + "%</span></div>" +
+      '<div class="bar" style="margin-top:5px"><i class="' + (pct===100?"done":"") + '" style="width:' + Math.max(pct,1.5) + '%"></i></div></div>';
+  });
+  h += "</div>";
+
+  h += '<div class="panel"><h2>Badges awarded per area</h2><p class="sub">Where the cohort is progressing, and where it stalls.</p><table>' +
+    "<thead><tr><th>Level</th><th>Area</th><th>Badge</th><th>Awarded</th><th>Objectives met</th></tr></thead><tbody>";
+  allAreas().forEach(function(x){
+    const earned = ps.filter(function(p){ return prog(p.id).badges.indexOf(x.area.id)>-1; }).length;
+    const metCount = ps.reduce(function(n,p){ return n + x.area.objectives.filter(function(o){ return prog(p.id).met.indexOf(o.id)>-1; }).length; },0);
+    const totalPoss = ps.length * x.area.objectives.length;
+    h += "<tr><td>" + x.level.id + "</td><td>" + esc(x.area.name) + "</td><td>" + esc(x.area.badge) + "</td>" +
+      "<td>" + earned + " of " + ps.length + "</td><td>" + metCount + " of " + totalPoss + "</td></tr>";
+  });
+  h += "</tbody></table></div>";
+
+  const skills = {};
+  state.tasks.forEach(function(t){ if(t.status==="Met") t.skills.forEach(function(s){ skills[s] = (skills[s]||0)+1; }); });
+  const keys = Object.keys(skills).sort(function(a,b){ return skills[b]-skills[a]; });
+  h += '<div class="panel"><h2>Skills logged on met tasks</h2><p class="sub">Drawn from completed task records.</p>' +
+    (keys.length ? '<div class="row">' + keys.map(function(k){ return '<span class="chip">' + esc(k) + " \u00b7 " + skills[k] + "</span>"; }).join("") + "</div>"
+                 : '<div class="empty"><b>No skills logged yet</b>Skills appear once tasks are marked met.</div>') + "</div>";
+
+  h += '<div class="panel"><h2>Goal pipeline</h2><p class="sub">Every goal by status.</p><table>' +
+    "<thead><tr><th>Status</th><th>Goals</th><th>Participants involved</th></tr></thead><tbody>";
+  ["Proposed","Approved","Active","Completed"].forEach(function(s){
+    const gs = state.goals.filter(function(g){ return g.status===s; });
+    const people = {}; gs.forEach(function(g){ people[g.participantId] = 1; });
+    h += "<tr><td>" + s + "</td><td>" + gs.length + "</td><td>" + Object.keys(people).length + "</td></tr>";
+  });
+  return h + "</tbody></table></div>";
+}
+
+function vAdminLog(){
+  let h = '<div class="pagehead"><h1>Activity log</h1><p>Audit trail of goal, task, badge and account changes.</p></div><div class="panel"><div class="list">';
+  state.log.slice(0,60).forEach(function(e){
+    const u = user(e.who) || {name:"System", colour:"#5D6A85", role:"system"};
+    h += '<div class="item">' + avatar(u, "sm") + '<div class="grow"><b class="small">' + esc(e.what) + "</b>" +
+      '<span class="tiny muted">' + esc(u.name) + " \u00b7 " + esc(u.title||u.role) + "</span></div>" +
+      '<span class="tiny muted nowrap">' + esc(e.at) + "</span></div>";
+  });
+  return h + "</div></div>";
+}
+
+/* ============================================================
+   14. MODALS
+   ============================================================ */
+function modalArea(areaId){
+  const fa = findArea(areaId);
+  const pid = me().role==="participant" ? me().id : state.focusParticipant;
+  if(!fa || !pid || !prog(pid)) return closable("Open a participant to see their progress in this area.");
+  const pr = prog(pid), earned = pr.badges.indexOf(areaId)>-1, ap = areaProgress(pid, areaId);
+  const related = goalsOf(pid).filter(function(g){ return g.areaId===areaId; });
+  let h = '<div class="spread"><div class="row" style="gap:12px">' + medallion(fa.area, earned, "", earned?"\u2713":"") +
+    "<div><h2>" + esc(fa.area.badge) + " badge</h2><span class=\"small muted\">" + esc(fa.area.gloss) + " \u00b7 " +
+    esc(fa.level.title) + " \u00b7 " + esc(fa.area.name) + "</span></div></div>" +
+    "<button class=\"x\" data-act=\"closeModal\" aria-label=\"Close\">\u2715</button></div>";
+  h += '<div class="divider"></div><div class="spread small"><b>' + ap.done + " of " + ap.total + " objectives met</b>" +
+    (earned ? '<span class="chip gold">Badge earned</span>' : '<span class="chip flat">' + (ap.total-ap.done) + " to go</span>") + "</div>" +
+    '<div class="bar" style="margin-top:6px"><i class="' + (earned?"done":"") + '" style="width:' + ap.pct + '%"></i></div>';
+  h += '<div class="list" style="margin-top:14px">';
+  fa.area.objectives.forEach(function(o){
+    const done = pr.met.indexOf(o.id)>-1;
+    h += '<div class="item"><span class="chip ' + (done?"go":"flat") + '">' + (done?"\u2713":"\u00b7") + "</span>" +
+      '<div class="grow small">' + esc(o.text) + "</div></div>";
+  });
+  h += "</div>";
+  h += '<h3 style="margin-top:16px">Goals in this area</h3>';
+  if(related.length){
+    h += '<div class="list" style="margin-top:8px">' + related.map(function(g){
+      return '<div class="item"><div class="grow small"><b>' + esc(g.title) + "</b></div>" + goalChip(g) +
+        '<button class="linkish small" data-act="goal" data-id="' + g.id + '">Open</button></div>'; }).join("") + "</div>";
+  } else {
+    h += '<p class="small muted">No goals set in this area yet.</p>';
+  }
+  return h;
+}
+
+function closable(msg){
+  return '<div class="spread"><h2>Nothing to show</h2><button class="x" data-act="closeModal" aria-label="Close">\u2715</button></div>' +
+    '<p class="small muted" style="margin-top:8px">' + esc(msg) + "</p>";
+}
+
+function modalGoal(gid){
+  const g = goal(gid);
+  if(!g) return closable("That goal is no longer on the programme.");
+  const p = user(g.participantId), fa = findArea(g.areaId), ts = tasksOfGoal(g.id);
+  const mine = me().role==="participant";
+  const manages = can.setGoals() && (me().role==="admin" || p.mentorId===me().id);
+  let h = '<div class="spread"><div><h2>' + esc(g.title) + '</h2><span class="small muted">' +
+    esc(fa.level.title) + " \u00b7 " + esc(fa.area.name) + " \u00b7 " + esc(p.name) + "</span></div>" +
+    '<button class="x" data-act="closeModal" aria-label="Close">\u2715</button></div>';
+  h += '<div class="row" style="margin-top:10px">' + goalChip(g) +
+    '<span class="chip flat">' + (g.proposedBy==="participant"?"Proposed by participant":"Set by mentor") + "</span>" +
+    '<span class="chip flat">Created ' + fmtDate(g.createdAt) + "</span></div>";
+  if(g.detail) h += '<p class="small" style="margin-top:12px">' + esc(g.detail) + "</p>";
+
+  h += '<div class="divider"></div><div class="tiny muted">Objectives this goal closes</div><div class="list" style="margin-top:6px">';
+  g.objectiveIds.forEach(function(o){
+    const done = prog(g.participantId).met.indexOf(o)>-1;
+    h += '<div class="item"><span class="chip ' + (done?"go":"flat") + '">' + (done?"met":"open") + "</span>" +
+      '<div class="grow small">' + esc(objText(o)) + "</div></div>";
+  });
+  h += "</div>";
+
+  h += '<div class="tiny muted" style="margin-top:14px">Tasks</div>';
+  if(ts.length){
+    h += '<div class="list" style="margin-top:6px">';
+    ts.forEach(function(t){
+      h += '<div class="item"><div class="grow small"><b>' + esc(t.title) + '</b><div class="tiny muted">' +
+        esc(t.supervisor) + " \u00b7 " + fmtDate(t.dateStarted) + "</div></div>" + taskChip(t) +
+        (can.recordTasks() && manages && t.status==="Assigned"
+          ? ' <button class="btn go sm" data-act="recordTask" data-id="' + t.id + '" data-result="Met">Met</button>' : "") + "</div>";
+    });
+    h += "</div>";
+  } else {
+    h += '<p class="small muted" style="margin-top:6px">' +
+      (g.status==="Active" ? "No tasks yet." : "Tasks can be added once the goal is active.") + "</p>";
+  }
+
+  h += thread("goal", g.id, g.comments, mine ? "Ask a question or give an update" : "Add a note");
+
+  const acts = [];
+  if(g.status==="Proposed" && manages){
+    acts.push('<button class="btn go" data-act="approveGoal" data-id="' + g.id + '">Approve goal</button>');
+    acts.push('<button class="btn warn" data-act="declineGoal" data-id="' + g.id + '">Send back</button>');
+  }
+  if(g.status==="Approved" && !g.acknowledged && mine && g.participantId===me().id){
+    acts.push('<button class="btn go" data-act="acknowledgeGoal" data-id="' + g.id + '">Acknowledge and start</button>');
+  }
+  if(acts.length) h += '<div class="row" style="margin-top:14px">' + acts.join("") + "</div>";
+  return h;
+}
+
+/* ============================================================
+   15. NAVIGATION
+   ============================================================ */
+const NAV = {
+  participant:[
+    {id:"home",     label:"Home",       glyph:"\uD83C\uDFE0"},
+    {id:"pathway",  label:"Pathway",    glyph:"\uD83D\uDDFA"},
+    {id:"badges",   label:"Badges",     glyph:"\uD83C\uDF96"},
+    {id:"goals",    label:"Goals",      glyph:"\uD83C\uDFAF"},
+    {id:"tasks",    label:"Tasks",      glyph:"\u2713"},
+    {id:"profile",  label:"My details", glyph:"\uD83D\uDC64"}
+  ],
+  mentor:[
+    {id:"roster",     label:"Participants", glyph:"\uD83D\uDC65"},
+    {id:"approvals",  label:"Approvals",    glyph:"\uD83D\uDCE9", badge:function(){ return pendingApprovals().length; }},
+    {id:"guidelines", label:"Guidelines",   glyph:"\uD83D\uDCD8"}
+  ],
+  helper:[
+    {id:"roster",     label:"Participants", glyph:"\uD83D\uDC65"},
+    {id:"guidelines", label:"Guidelines",   glyph:"\uD83D\uDCD8"}
+  ],
+  admin:[
+    {id:"home",       label:"Overview",     glyph:"\uD83D\uDCCA"},
+    {id:"roster",     label:"Participants", glyph:"\uD83D\uDC65"},
+    {id:"people",     label:"People",       glyph:"\u2795"},
+    {id:"structure",  label:"Structure",    glyph:"\uD83E\uDDE9"},
+    {id:"reports",    label:"Reports",      glyph:"\uD83D\uDCC8"},
+    {id:"log",        label:"Activity",     glyph:"\uD83D\uDD52"}
+  ]
+};
+
+const VIEWS = {
+  participant:{home:vParticipantHome, pathway:vParticipantPathway, badges:vParticipantBadges,
+    goals:vParticipantGoals, tasks:vParticipantTasks, profile:vParticipantProfile},
+  mentor:{roster:vRoster, approvals:vApprovals, guidelines:vGuidelines, person:vPerson},
+  helper:{roster:vRoster, guidelines:vGuidelines, person:vPerson},
+  admin:{home:vAdminHome, roster:vRoster, people:vAdminPeople, structure:vAdminStructure,
+    reports:vAdminReports, log:vAdminLog, person:vPerson, approvals:vApprovals, guidelines:vGuidelines}
+};
+
+const ROLE_BLURB = {
+  participant:"See your pathway, propose goals, work through tasks",
+  mentor:"Set and approve goals, assign tasks, track your group",
+  helper:"Support the participants assigned to you",
+  admin:"Full access, programme structure and reports"
+};
+const ROLE_NAME = {participant:"Participant", mentor:"Mentor or coach", helper:"Helper", admin:"Programme head"};
+const ROLE_GLYPH = {participant:"\uD83E\uDDD1", mentor:"\uD83E\uDDED", helper:"\uD83E\uDD1D", admin:"\uD83D\uDD11"};
+
+/* ============================================================
+   16. SIGN-IN GATE  (spec §4.1 — role-based access)
+   ============================================================ */
+function vGate(){
+  let h = '<div class="gate"><div class="gatebox"><header>' +
+    '<div class="row" style="justify-content:center;gap:10px;margin-bottom:12px">' +
+    '<span class="medal">\u2605</span></div>' +
+    "<h1>Youth Achievement Award</h1><p>Four levels, four developmental areas in each, one badge per area. " +
+    "Choose how you are signing in \u2014 what you can see and change depends on your role.</p></header>";
+  if(!state.gateRole){
+    h += '<div class="roles">' + ["participant","mentor","helper","admin"].map(function(r){
+      const n = state.users.filter(function(u){ return u.role===r; }).length;
+      return '<button class="rolecard" data-act="gateRole" data-id="' + r + '">' +
+        '<span class="g">' + ROLE_GLYPH[r] + "</span><b>" + ROLE_NAME[r] + "</b><p>" + esc(ROLE_BLURB[r]) + "</p>" +
+        '<p style="margin-top:7px;color:#F2C94C">' + n + " account" + (n===1?"":"s") + "</p></button>";
+    }).join("") + "</div>";
+    h += '<p class="gatefoot">Prototype \u2014 no password needed. Password resets in the live system go to the account email, ' +
+      "or the guardian address for participants under 13.</p>";
+  } else {
+    const list = state.users.filter(function(u){ return u.role===state.gateRole; });
+    h += '<div class="panel" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18);color:#fff">' +
+      '<div class="spread"><h2>' + ROLE_NAME[state.gateRole] + " accounts</h2>" +
+      '<button class="linkish" style="color:#F2C94C" data-act="gateRole" data-id="">Change role</button></div>' +
+      '<div class="picker">' + list.map(function(u){
+        const sub = u.role==="participant"
+          ? "Age " + u.age + " \u00b7 " + PROGRAM.levels[prog(u.id).level-1].camp + " \u00b7 " + prog(u.id).badges.length + " badges"
+          : u.title + " since " + u.since;
+        return '<button class="pick" data-act="signIn" data-id="' + u.id + '">' + avatar(u) +
+          '<span class="grow"><b>' + esc(u.name) + "</b><span>" + esc(sub) + "</span></span>" +
+          '<span style="color:#F2C94C;font-weight:700">Sign in</span></button>';
+      }).join("") + "</div></div>";
+  }
+  return h + "</div></div>";
+}
+
+/* ============================================================
+   17. RENDER
+   ============================================================ */
+function render(){
+  const scroll = window.scrollY;
+  const app = $("#app"), tabs = $("#tabbar"), layer = $("#layer");
+
+  if(!state.session){
+    app.innerHTML = vGate();
+    tabs.innerHTML = ""; tabs.style.display = "none";
+    layer.innerHTML = "";
+    return;
+  }
+  const u = me(), nav = NAV[u.role], views = VIEWS[u.role];
+  if(!views[state.view]) state.view = nav[0].id;
+
+  const navHTML = nav.map(function(n){
+    const on = state.view===n.id || (state.view==="person" && n.id==="roster");
+    const c = n.badge ? n.badge() : 0;
+    return '<button data-act="go" data-id="' + n.id + '"' + (on?' aria-current="page"':"") + ">" +
+      '<span class="glyph">' + n.glyph + "</span><span>" + n.label + "</span>" +
+      (c ? '<span class="count">' + c + "</span>" : "") + "</button>";
+  }).join("");
+
+  const body = views[state.view]();
+
+  app.innerHTML = '<div class="shell"><aside class="rail">' +
+    '<div class="brand"><span class="mark">\u2605</span><span><b>Youth Achievement</b><span>Award programme</span></span></div>' +
+    '<nav class="nav" aria-label="Main">' + navHTML + "</nav>" +
+    '<div class="railfoot"><div class="whoami"><b>' + esc(u.name) + "</b>" + esc(ROLE_NAME[u.role]) +
+    '<button data-act="signOut">Switch account</button></div></div></aside>' +
+    '<main><div class="mobar">' + avatar(u, "sm") +
+    '<div class="grow small"><b>' + esc(u.name) + '</b> <span class="muted">\u00b7 ' + esc(ROLE_NAME[u.role]) + "</span></div>" +
+    '<button class="btn ghost sm" data-act="signOut">Switch</button></div>' + body + "</main></div>";
+
+  tabs.style.display = "";
+  tabs.innerHTML = nav.slice(0,5).map(function(n){
+    const on = state.view===n.id || (state.view==="person" && n.id==="roster");
+    const c = n.badge ? n.badge() : 0;
+    return '<button data-act="go" data-id="' + n.id + '"' + (on?' aria-current="page"':"") + ">" +
+      '<span class="glyph">' + n.glyph + "</span>" + n.label + (c ? '<span class="count">' + c + "</span>" : "") + "</button>";
+  }).join("");
+
+  layer.innerHTML = state.modal
+    ? '<div class="scrim" data-act="closeModal"><div class="modal" data-stop="1">' +
+      (state.modal.kind==="area" ? modalArea(state.modal.id) : modalGoal(state.modal.id)) + "</div></div>"
+    : "";
+
+  justStruck = [];
+  window.scrollTo(0, scroll);
+}
+
+/* ============================================================
+   18. EVENTS
+   ============================================================ */
+function adminToggleObjective(pid, objId){
+  const p = prog(pid), i = p.met.indexOf(objId);
+  if(i>-1) p.met.splice(i,1); else p.met.push(objId);
+  /* recompute downwards, then re-run the awards engine */
+  p.badges = p.badges.filter(function(aid){
+    return findArea(aid).area.objectives.every(function(o){ return p.met.indexOf(o.id)>-1; });
+  });
+  p.awards = p.awards.filter(function(lid){
+    return PROGRAM.levels[lid-1].areas.every(function(a){ return p.badges.indexOf(a.id)>-1; });
+  });
+  const top = p.awards.length ? Math.max.apply(null, p.awards) : 0;
+  p.level = Math.min(4, Math.max(1, top + 1));
+  logIt((i>-1?"Cleared":"Credited") + " objective for " + user(pid).name + ": " + objText(objId));
+  runProgression(pid);
+  render();
+}
+
+document.addEventListener("click", function(ev){
+  const el = ev.target.closest("[data-act]");
+  if(!el) return;
+  if(el.classList.contains("scrim") && ev.target.closest("[data-stop]")) return;
+  const act = el.getAttribute("data-act"),
+        id  = el.getAttribute("data-id"),
+        obj = el.getAttribute("data-obj"),
+        res = el.getAttribute("data-result");
+  switch(act){
+    case "gateRole":  state.gateRole = id || null; render(); break;
+    case "signIn":    ACT.signIn(id); break;
+    case "signOut":   ACT.signOut(); break;
+    case "go":        state.modal = null; go(id); break;
+    case "person":    state.modal = null; openParticipant(id); break;
+    case "goal":      state.modal = {kind:"goal", id:id}; render(); break;
+    case "area":      state.modal = {kind:"area", id:id}; render(); break;
+    case "closeModal":state.modal = null; render(); break;
+    case "comment":   ACT.comment(el.getAttribute("data-kind"), id); break;
+    case "recordTask":ACT.recordTask(id, res); break;
+    case "editObjective":   ACT.editObjective(id, obj); break;
+    case "removeObjective": ACT.removeObjective(id, obj); break;
+    case "proposeGoal": case "setGoal": case "assignTask": case "registerParticipant": case "addStaff":
+      ACT[act](); break;
+    case "approveGoal": case "declineGoal": case "acknowledgeGoal": case "startTask": case "reopenTask":
+    case "saveDetails": case "assignStaff": case "removeStaff": case "renameArea": case "addObjective":
+      ACT[act](id); break;
+    case "toggleObjective": case "ngArea": case "sgArea": break;
+    default: break;
+  }
+});
+
+document.addEventListener("change", function(ev){
+  const el = ev.target.closest("[data-act]");
+  if(!el) return;
+  const act = el.getAttribute("data-act");
+  if(act==="toggleObjective"){
+    adminToggleObjective(el.getAttribute("data-id"), el.getAttribute("data-obj"));
+  } else if(act==="ngArea"){
+    $("#ng-objs").innerHTML = objChecks(me().id, el.value, "ng-obj");
+  } else if(act==="sgArea"){
+    $("#sg-objs").innerHTML = objChecks(state.focusParticipant, el.value, "sg-obj");
+  }
+});
+
+document.addEventListener("keydown", function(ev){
+  if(ev.key==="Escape" && state.modal){ state.modal = null; render(); }
+});
+
+/* enter key posts a comment */
+document.addEventListener("keydown", function(ev){
+  if(ev.key!=="Enter") return;
+  const t = ev.target;
+  if(t.id && t.id.indexOf("cmt-")===0){
+    const btn = document.querySelector('[data-act="comment"][data-id="' + t.id.slice(4) + '"]');
+    if(btn) btn.click();
+  }
+});
+
+render();
+
+</script>
+</body>
+</html>
