@@ -81,6 +81,8 @@ main{padding:26px 30px 70px;max-width:1120px}
 label.f{display:block;font-size:.83rem;font-weight:700;color:var(--blue-ink);margin:0 0 4px}
 input,select,textarea{width:100%;font-family:inherit;font-size:.92rem;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--white);color:var(--ink)}
 input:focus,select:focus,textarea:focus{border-color:var(--blue);outline:none}
+input.input-warning{border-color:var(--rose);background:#FCF1F0;box-shadow:0 0 0 3px rgba(192,57,43,.12)}
+.field-warning{display:block;margin-top:5px;color:var(--rose);font-size:.8rem;font-weight:700}
 textarea{min-height:70px;resize:vertical}
 .field{margin-bottom:12px}
 .checks{display:flex;flex-direction:column;gap:6px;border:1.5px solid var(--line);border-radius:10px;padding:10px;max-height:180px;overflow:auto}
@@ -687,11 +689,29 @@ ACT.saveDetails = function(pid){
 };
 
 ACT.registerParticipant = function(){
-  const name = $("#rp-name").value.trim(), age = +$("#rp-age").value,
+  const nameInput = $("#rp-name"), name = nameInput.value.trim(), age = +$("#rp-age").value,
         guardian = $("#rp-guardian").value.trim(), mentorId = $("#rp-mentor").value,
         school = $("#rp-school").value.trim();
   if(!can.registerParticipant()){ toast("Your role cannot register participants."); return; }
   if(!name || !age){ toast("Name and age are both needed to create the account."); return; }
+  const normalName = function(value){ return value.normalize("NFKC").replace(/\s+/g," ").trim().toLocaleLowerCase(); };
+  const duplicate = participants().find(function(participant){ return normalName(participant.name)===normalName(name); });
+  if(duplicate){
+    nameInput.classList.add("input-warning");
+    nameInput.setAttribute("aria-invalid","true");
+    nameInput.setAttribute("aria-describedby","rp-name-warning");
+    let warning = $("#rp-name-warning");
+    if(!warning){
+      warning = document.createElement("span");
+      warning.id = "rp-name-warning";
+      warning.className = "field-warning";
+      nameInput.insertAdjacentElement("afterend", warning);
+    }
+    warning.textContent = duplicate.name + " is already registered. Enter a different participant name.";
+    nameInput.focus();
+    toast("<b>Participant already registered</b><br>" + esc(duplicate.name) + " already has an account.", "gold");
+    return;
+  }
   if(age < 13 && !guardian){ toast("Participants under 13 need a guardian email before the account is activated."); return; }
   const id = uid("u-p");
   const palette = ["#2A4D9B","#27AE60","#B8860F","#8E44AD","#16A085","#C0392B"];
@@ -1869,6 +1889,15 @@ document.addEventListener("change", function(ev){
   } else if(act==="sgArea"){
     $("#sg-objs").innerHTML = objChecks(state.focusParticipant, el.value, "sg-obj");
   }
+});
+
+document.addEventListener("input", function(ev){
+  if(ev.target.id!=="rp-name") return;
+  ev.target.classList.remove("input-warning");
+  ev.target.removeAttribute("aria-invalid");
+  ev.target.removeAttribute("aria-describedby");
+  const warning = $("#rp-name-warning");
+  if(warning) warning.remove();
 });
 
 document.addEventListener("keydown", function(ev){
