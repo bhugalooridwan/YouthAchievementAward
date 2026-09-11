@@ -690,12 +690,13 @@ ACT.registerParticipant = function(){
   const name = $("#rp-name").value.trim(), age = +$("#rp-age").value,
         guardian = $("#rp-guardian").value.trim(), mentorId = $("#rp-mentor").value,
         school = $("#rp-school").value.trim();
+  if(!can.registerParticipant()){ toast("Your role cannot register participants."); return; }
   if(!name || !age){ toast("Name and age are both needed to create the account."); return; }
   if(age < 13 && !guardian){ toast("Participants under 13 need a guardian email before the account is activated."); return; }
   const id = uid("u-p");
   const palette = ["#2A4D9B","#27AE60","#B8860F","#8E44AD","#16A085","#C0392B"];
   state.users.push({id:id, role:"participant", name:name, age:age, guardian:guardian, mentorId:mentorId,
-    helperIds:[], joined:today(), school:school, colour:palette[state.users.length % palette.length]});
+    helperIds:me().role==="helper" ? [me().id] : [], joined:today(), school:school, colour:palette[state.users.length % palette.length]});
   state.progress[id] = {level:1, met:[], badges:[], awards:[]};
   logIt("Registered participant " + name + " and assigned " + user(mentorId).name);
   toast("<b>" + esc(name) + "</b> registered at Level 1 with " + esc(user(mentorId).name) + ".");
@@ -1133,6 +1134,7 @@ function detailsForm(u){
    9. PERMISSIONS  (spec §3, §11)
    ============================================================ */
 const can = {
+  registerParticipant: function(){ return ["mentor","helper","admin"].indexOf(me().role)>-1; },
   seeAll:      function(){ return ["mentor","admin"].indexOf(me().role)>-1; },
   setGoals:    function(){ return ["mentor","admin"].indexOf(me().role)>-1; },
   assignTasks: function(){ return ["mentor","admin"].indexOf(me().role)>-1; },
@@ -1152,6 +1154,22 @@ function pendingApprovals(){
   return state.goals.filter(function(g){ return g.status==="Proposed" && mine.indexOf(g.participantId)>-1; });
 }
 
+function participantRegistrationForm(){
+  const current = me(), mentors = state.users.filter(function(u){ return u.role==="mentor"; });
+  return '<div class="panel"><h2>Register a participant</h2>' +
+    '<p class="sub">Creates the account at Level 1 and assigns a mentor or coach.</p>' +
+    '<div class="field"><label class="f" for="rp-name">Full name</label><input id="rp-name" placeholder="First and last name"></div>' +
+    '<div class="grid g2"><div class="field"><label class="f" for="rp-age">Age</label><input id="rp-age" type="number" min="5" max="20" placeholder="5\u201320"></div>' +
+    '<div class="field"><label class="f" for="rp-school">School or group</label><input id="rp-school"></div></div>' +
+    '<div class="field"><label class="f" for="rp-guardian">Guardian email</label><input id="rp-guardian" type="email" placeholder="Required under 13"></div>' +
+    '<div class="field"><label class="f" for="rp-mentor">Mentor or coach</label><select id="rp-mentor">' +
+    mentors.map(function(m){
+      const load = participants().filter(function(p){ return p.mentorId===m.id; }).length;
+      return '<option value="' + m.id + '"' + (current.role==="mentor" && current.id===m.id ? " selected" : "") + '>' + esc(m.name) + " \u00b7 " + load + " assigned</option>";
+    }).join("") +
+    '</select></div><button class="btn" data-act="registerParticipant">Create account</button></div>';
+}
+
 /* ============================================================
    10. ROSTER + APPROVALS
    ============================================================ */
@@ -1162,6 +1180,8 @@ function vRoster(){
                 u.role==="mentor" ? "The participants you mentor" : "The participants you help with";
   let h = '<div class="pagehead"><h1>' + (u.role==="helper"?"Your participants":"Participants") + "</h1><p>" + esc(scope) +
     (u.role==="mentor" ? ". You can also open any other participant's profile from the programme search below." : ".") + "</p></div>";
+
+  if(can.registerParticipant()) h += participantRegistrationForm();
 
   if(u.role!=="helper"){
     const tasksOpen = state.tasks.filter(function(t){ return t.status==="Assigned" && list.map(function(p){return p.id;}).indexOf(t.participantId)>-1; }).length;
