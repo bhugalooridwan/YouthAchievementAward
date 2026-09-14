@@ -165,6 +165,25 @@ tr:last-child td{border-bottom:0}
 .chest .box.won{border-color:var(--gold);background:var(--gold-wash);color:var(--gold-deep)}
 .link{height:26px;width:3px;background:repeating-linear-gradient(var(--blue-line) 0 5px,transparent 5px 9px);margin:0 auto}
 
+/* ---------- level capstone (reflection + final challenge) ---------- */
+.capstone{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.cap{border:1.5px dashed var(--blue-line);border-radius:14px;padding:12px;background:#FBFCFF}
+.cap textarea{min-height:64px}
+
+/* ---------- participant journey ---------- */
+.journey{display:flex;align-items:flex-start;overflow-x:auto;padding:4px 0 2px}
+.jstep{flex:1;min-width:116px;text-align:center;position:relative}
+.jstep:before{content:"";position:absolute;top:17px;left:-50%;width:100%;height:3px;background:var(--blue-line)}
+.jstep:first-child:before{display:none}
+.jstep.done:before{background:var(--emerald)}
+.jdot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;margin:0 auto 7px;position:relative;z-index:1;
+  background:var(--white);border:2.5px solid var(--blue-line);color:var(--muted);font-weight:800;font-size:.82rem}
+.jstep.done .jdot{background:var(--emerald);border-color:var(--emerald);color:#fff}
+.jstep.now .jdot{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 0 0 4px var(--blue-wash)}
+.jstep b{display:block;font-size:.78rem;line-height:1.2;padding:0 4px}
+.jstep.now b{color:var(--blue-dark)}
+.jstep span{display:block;font-size:.7rem;color:var(--muted);margin-top:3px;padding:0 6px}
+
 /* ---------- hero ---------- */
 .hero{background:var(--blue-ink);color:#fff;border-radius:18px;padding:20px 22px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
 .hero .av{border:3px solid rgba(255,255,255,.35);background:var(--blue)}
@@ -227,6 +246,7 @@ tr:last-child td{border-bottom:0}
   .g2{grid-template-columns:1fr}
   .nodes{grid-template-columns:repeat(2,1fr);gap:16px}
   .nodes:before{display:none}
+  .capstone{grid-template-columns:1fr}
   .tabbar{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--blue-ink);padding:6px 4px;z-index:50;box-shadow:0 -2px 14px rgba(15,31,66,.25)}
   .tabbar button{flex:1;background:none;border:0;color:#9BB0DB;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.66rem;font-weight:700;padding:6px 2px;border-radius:10px;cursor:pointer;position:relative}
   .tabbar button[aria-current="page"]{color:var(--gold)}
@@ -248,10 +268,16 @@ tr:last-child td{border-bottom:0}
 "use strict";
 /* ============================================================
    1. PROGRAM STRUCTURE  (admin-editable — spec §5, UC-08)
-   4 levels x 4 developmental areas x objectives -> badge
-   Badge names are the virtue each area builds, with a plain gloss.
+   4 levels (Foundation, Growth, Leadership, Purpose)
+     x 4 core pillars x objectives -> one pillar badge each
+   A level award needs all 4 pillar badges + reflection + final challenge.
    ============================================================ */
-const AREA_GLYPH = {Physical:"\uD83C\uDFC3", Social:"\uD83E\uDD1D", Intellectual:"\uD83D\uDCA1", Spiritual:"\uD83E\uDDED"};
+const AREA_GLYPH = {
+  "Personal Development":"\uD83E\uDDED",
+  "Skills Development":"\uD83D\uDCA1",
+  "Service & Community Engagement":"\uD83E\uDD1D",
+  "Physical / Experiential Learning":"\uD83C\uDFC3"
+};
 
 function area(id, name, letter, badge, gloss, objectives){
   return {id:id, name:name, letter:letter, badge:badge, gloss:gloss,
@@ -259,87 +285,198 @@ function area(id, name, letter, badge, gloss, objectives){
 }
 
 let PROGRAM = {levels:[
-  {id:1, title:"Level 1", camp:"Base Camp", ages:"Ages 5\u20139", areas:[
-    area("L1-PH","Physical","A","Quwwah","Strength",[
-      "Take part in 6 active play sessions after madrassah",
-      "Learn and show 3 warm-up stretches",
-      "Walk or run 1 km with your group without stopping"]),
-    area("L1-SO","Social","B","Salaam","Peace",[
-      "Give salaam and introduce yourself to someone new at a session",
-      "Help tidy the madrassah classroom with others",
-      "Play 3 games that need a partner"]),
-    area("L1-IN","Intellectual","C","Iqra","Read",[
-      "Read or listen to 4 short books",
-      "Learn the Arabic letters and write your name in Arabic",
-      "Build something by following instructions"]),
-    area("L1-SP","Spiritual","D","Nur","Light",[
-      "Memorise Surah al-Fatihah and 3 short surahs",
-      "Learn the steps of wudu and show them to your helper",
-      "Do one kind act each week for a month without being asked"])]},
-  {id:2, title:"Level 2", camp:"Ridge Trail", ages:"Ages 10\u201313", areas:[
-    area("L2-PH","Physical","E","Himmah","Resolve",[
-      "Keep a 6-week activity log",
-      "Complete a guided hike up Le Pouce with your group",
-      "Learn the rules of a new sport and play a full match"]),
-    area("L2-SO","Social","F","Ukhuwwah","Brotherhood",[
-      "Work in a team of four or more on a small project",
-      "Help prepare and serve at one iftar or community meal",
-      "Settle a disagreement with words, then talk it through with your mentor"]),
-    area("L2-IN","Intellectual","G","Ilm","Knowledge",[
-      "Complete a 4-week practical course, such as basic first aid or small electrics",
-      "Give a 5-minute talk on a topic you chose",
-      "Learn 20 new Arabic words and use them in your own sentences"]),
-    area("L2-SP","Spiritual","H","Sabr","Patience",[
-      "Keep the five daily salah for 6 weeks and log it",
-      "Memorise 5 new surahs and learn what they mean",
-      "Fast the days of Ramadan you are able to, as your guardian agrees"])]},
-  {id:3, title:"Level 3", camp:"High Pass", ages:"Ages 14\u201316", areas:[
-    area("L3-PH","Physical","I","Azm","Determination",[
-      "Train for and finish an endurance challenge, such as a 10 km trail run",
-      "Lead the warm-up for a younger group",
-      "Keep a 12-week training plan"]),
-    area("L3-SO","Social","J","Khidmah","Service",[
-      "Help run two sessions for the Level 1 group",
-      "Complete 20 hours of community service through the institution",
-      "Interview two people about their trade or profession"]),
-    area("L3-IN","Intellectual","K","Hikmah","Wisdom",[
-      "Complete a certified first aid course",
-      "Research a question and write up what you found",
-      "Learn a practical skill to a usable standard and teach it to one other person"]),
-    area("L3-SP","Spiritual","L","Taqwa","God-consciousness",[
-      "Study the seerah and present one episode to your group",
-      "Keep a reflection journal for a full term",
-      "Lead a short dhikr or reflection session for your group"])]},
-  {id:4, title:"Level 4", camp:"Summit", ages:"Ages 17\u201320", areas:[
-    area("L4-PH","Physical","M","Futuwwah","Noble courage",[
-      "Plan and complete a two-day hike and camp with your team",
-      "Coach a younger participant for 6 weeks",
-      "Meet a demanding fitness goal you set with your coach"]),
-    area("L4-SO","Social","N","Qiyadah","Leadership",[
-      "Lead a project with a team you recruited yourself",
-      "Represent the institution at a public or interfaith event",
-      "Mentor two Level 2 participants for a term"]),
-    area("L4-IN","Intellectual","O","Ibtikar","Innovation",[
-      "Design and build a project of your own, then present it to a panel",
-      "Complete an advanced practical course, such as domestic electrical wiring",
-      "Write a short reflection on what you would do differently"]),
-    area("L4-SP","Spiritual","P","Ihsan","Excellence",[
-      "Complete 40 hours of service, at least half of it unseen by others",
-      "Study a passage of the Qur'an with tafsir and share what you learnt",
-      "Write your award statement on the character you want to carry forward"])]}
+  {id:1, title:"Foundation", badgeName:"Pathfinder Badge", identity:"I started my journey",
+   reflection:"Write about what has changed in your week since you started.",
+   challenge:"Foundation Challenge Day \u2014 one short task from each pillar, completed in a single session.",
+   areas:[
+    area("L1-PD","Personal Development","A","Personal Badge","First habits of worship and character",[
+      "Basic Salaah \u2014 learn the five daily prayers and keep a four-week log",
+      "Self-Awareness \u2014 name three strengths and one habit you want to change",
+      "Discipline & Routine \u2014 hold a simple daily routine for one month",
+      "Basic Communication \u2014 greet, introduce yourself and ask for help clearly",
+      "Niyyah & Simple Goals \u2014 set one intention each week and review it",
+      "Faith Awareness \u2014 learn the pillars of iman and explain them in your own words",
+      "Sabr & Emotional Control \u2014 use a calming step when you are angry, three times",
+      "Akhlaq (Good Character & Manners) \u2014 practise the manners of speech, eating and greeting"]),
+    area("L1-SK","Skills Development","B","Skill Badge","First skills in thinking, speaking and making",[
+      "Cognitive Skills \u2014 finish four short books or puzzles and talk about them",
+      "Communication Skills \u2014 give a two-minute talk to your group",
+      "Practical Skills \u2014 make or fix something by following instructions",
+      "Social Skills \u2014 take part in three activities that need a partner",
+      "Spiritual & Character Skills \u2014 memorise Surah al-Fatihah and three short surahs",
+      "World Awareness (Intro) \u2014 locate five Muslim countries and learn one thing about each",
+      "Basic Media Awareness \u2014 tell the difference between a fact and an opinion online",
+      "Self-Reliance Skills \u2014 pack your own bag, keep your things in order and make a simple meal"]),
+    area("L1-SV","Service & Community Engagement","C","Service Badge","Small acts of service, close to home",[
+      "Birr al-Walidayn \u2014 take on one household duty for a month",
+      "Mosque / Community Centre Support \u2014 help set up or tidy after three sessions",
+      "Simple Volunteering \u2014 join one supervised volunteering session",
+      "School-Based Service \u2014 help a classmate or teacher every week for a term",
+      "Kindness Challenge \u2014 one kind act each week for a month, without being asked",
+      "Civic Responsibility & Social Awareness \u2014 learn who keeps your neighbourhood running",
+      "Community Awareness (Ummah Lens) \u2014 learn about one community in need and make du'a for them"]),
+    area("L1-PX","Physical / Experiential Learning","D","Physical Badge","Moving, playing and time outdoors",[
+      "Basic Fitness Routine \u2014 six active sessions with a warm-up you can lead",
+      "Sports Introduction \u2014 learn the rules of one sport and play a full game",
+      "Walking Challenge \u2014 walk or run 1 km with your group without stopping",
+      "Mobility & Flexibility \u2014 show three stretches and use them before activity",
+      "Basic Outdoor Exposure \u2014 take part in one supervised outdoor day",
+      "Nature Reflection Walks (Tafakkur) \u2014 walk and record what you noticed in creation",
+      "Sunnah Sports Introduction \u2014 try archery, swimming or riding once"])]},
+  {id:2, title:"Growth", badgeName:"Builder Badge", identity:"I am consistent and growing",
+   reflection:"Write about where you stayed consistent, and where you slipped.",
+   challenge:"Growth Challenge \u2014 hold a six-week commitment across two pillars without breaking it.",
+   areas:[
+    area("L2-PD","Personal Development","E","Personal Badge","Consistency, mindset and responsibility",[
+      "Consistency in 'Ibadah \u2014 keep the five daily salah for six weeks and log it",
+      "Growth Mindset \u2014 keep working at one skill you found hard until it improves",
+      "Learning How to Learn \u2014 use a study method and show what changed in your results",
+      "Communication Skills (Intermediate) \u2014 explain an idea to someone younger and check they understood",
+      "Goal Setting & Productivity \u2014 plan a term of goals and review them weekly",
+      "Connection with the Qur'an \u2014 memorise five surahs and learn what they mean",
+      "Emotional Intelligence \u2014 name what you feel and settle a disagreement with words",
+      "Responsibility & Amanah \u2014 hold a trust for a term and report on it honestly"]),
+    area("L2-SK","Skills Development","F","Skill Badge","Structured thinking, courses and digital work",[
+      "Cognitive Skills \u2014 research a question and write up what you found",
+      "Communication Skills \u2014 give a five-minute talk on a topic you chose",
+      "Practical Skills \u2014 complete a four-week practical course such as basic first aid",
+      "Social Skills \u2014 work in a team of four or more on a small project",
+      "Spiritual & Character Skills \u2014 learn twenty Arabic words and use them in your own sentences",
+      "World Awareness (Important) \u2014 follow one current issue and explain both sides",
+      "Structured Thinking & Expression \u2014 plan an argument with a point, evidence and conclusion",
+      "Digital Productivity & Content Creation \u2014 produce one useful piece of digital work"]),
+    area("L2-SV","Service & Community Engagement","G","Service Badge","Regular, committed service",[
+      "Community Awareness (Ummah Lens) \u2014 present one issue facing the ummah to your group",
+      "Weekly Volunteering Commitment \u2014 volunteer every week for a full term",
+      "Tarbiyyah Support \u2014 help run a session for the Foundation group",
+      "Environmental Khilafah \u2014 lead a clean-up or a waste-reduction change",
+      "Event Support \u2014 help prepare and serve at one community meal or iftar",
+      "Structured Kindness Project \u2014 plan and deliver a kindness project with a team",
+      "Civic Responsibility & Social Awareness \u2014 meet someone who serves the public and report back",
+      "Interfaith & Intercultural Engagement \u2014 take part in a supervised visit or dialogue"]),
+    area("L2-PX","Physical / Experiential Learning","H","Physical Badge","Training, endurance and camp life",[
+      "Endurance Training \u2014 keep a six-week activity log and improve on your first time",
+      "Strength Training \u2014 follow a supervised strength plan for eight weeks",
+      "Structured Sports Training \u2014 train with a club or squad for a season",
+      "Hiking / Trekking \u2014 complete a guided hike with your group",
+      "Fitness Challenge Program \u2014 set and meet a measurable fitness target",
+      "Fasting + Physical Discipline \u2014 keep the fasts you are able to and stay active",
+      "Islamic Camping Experience \u2014 attend a full camp and take a duty on the rota"])]},
+  {id:3, title:"Leadership", badgeName:"Navigator Badge", identity:"I lead and take responsibility",
+   reflection:"Write about what leading others taught you about amanah.",
+   challenge:"Leadership Challenge \u2014 plan, lead and debrief an activity for a younger group.",
+   areas:[
+    area("L3-PD","Personal Development","I","Personal Badge","Leading yourself before others",[
+      "Khushu' \u2014 keep a term of focused salah and journal what changed",
+      "'Adl (Justice) & Decision-Making \u2014 make a fair call in a dispute and explain your reasoning",
+      "Leadership as Amanah \u2014 hold a role for a term and account for it",
+      "Advanced Communication \u2014 chair a meeting and summarise the decisions",
+      "Self-Management \u2014 run your own weekly plan without being chased",
+      "Tadabbur Qur'an \u2014 study a passage with tafsir and present what you learnt",
+      "Shura (Consultation & Teamwork) \u2014 consult your team before a group decision",
+      "Mentorship & Tarbiyah \u2014 mentor a Growth participant for a term"]),
+    area("L3-SK","Skills Development","J","Skill Badge","Facilitating, designing and delivering",[
+      "Cognitive Skills \u2014 break a real problem down and test your solution",
+      "Communication Skills \u2014 speak to an audience outside your own group",
+      "Practical Skills \u2014 complete a certified course and reach a usable standard",
+      "Social Skills \u2014 build a team from people you did not already know",
+      "Spiritual & Character Skills \u2014 lead a short dhikr or reflection session",
+      "World Awareness (Advanced) \u2014 compare how two sources report the same event",
+      "Group Facilitation & Shura Skills \u2014 facilitate a group to a decision everyone owns",
+      "Project Design & Execution \u2014 design, run and close a project against a written plan"]),
+    area("L3-SV","Service & Community Engagement","K","Service Badge","Leading service for others",[
+      "Lead a Small Service Project \u2014 plan and deliver it with a team you recruited",
+      "Team Leadership \u2014 lead a team through a task and debrief it afterwards",
+      "Mentorship \u2014 support two Foundation or Growth participants for a term",
+      "Problem-Solving Project \u2014 find a local problem and deliver a fix",
+      "Event Organisation \u2014 organise an event from first plan to clean-up",
+      "Civic Responsibility & Social Awareness \u2014 complete twenty hours of community service",
+      "Interfaith & Intercultural Engagement \u2014 represent the institution at a public event"]),
+    area("L3-PX","Physical / Experiential Learning","L","Physical Badge","Leading in sport and the outdoors",[
+      "Team Leadership in Sports \u2014 captain a team for a season",
+      "Advanced Outdoor Challenge \u2014 complete a two-day hike and camp with your team",
+      "Fitness Coaching \u2014 coach a younger participant for six weeks",
+      "Obstacle / Adventure Challenge \u2014 train for and finish an endurance event",
+      "Sunnah Skill Development (Advanced) \u2014 reach a graded standard in archery, swimming or riding",
+      "Plan & Lead an Islamic Camp \u2014 write the programme and run it with a team",
+      "Expedition with Reflection \u2014 complete an expedition and present your reflection"])]},
+  {id:4, title:"Purpose", badgeName:"Legacy Badge", identity:"I create impact and purpose",
+   reflection:"Write what you want to leave behind, and what it will cost you.",
+   challenge:"Legacy Challenge \u2014 deliver a project that keeps running after you step back.",
+   areas:[
+    area("L4-PD","Personal Development","M","Personal Badge","Identity, vision and legacy",[
+      "Qiyadah in 'Ibadah \u2014 lead others in worship and keep them consistent",
+      "Ihsan (Excellence in All Actions) \u2014 forty hours of service, at least half unseen by others",
+      "Purpose & Identity \u2014 write who you are and what you are for",
+      "Influence & Impact \u2014 change one thing for the better beyond your own circle",
+      "Vision & Life Direction \u2014 set a five-year direction with your mentor",
+      "Deep Reflection (Tadabbur & Tafakkur) \u2014 keep a year of reflection and share one insight",
+      "Critical Thinking \u2014 argue a position you disagree with, fairly",
+      "Legacy Thinking \u2014 hand a role over so that it outlasts you"]),
+    area("L4-SK","Skills Development","N","Skill Badge","Strategy, mastery and clarity",[
+      "Cognitive Skills \u2014 solve a problem nobody has set out for you",
+      "Communication Skills \u2014 present to a panel and answer their questions",
+      "Practical Skills \u2014 complete an advanced course to a professional standard",
+      "Social Skills \u2014 build and keep a network that serves others",
+      "Spiritual & Character Skills \u2014 teach what you have learnt to a group",
+      "World Awareness (Expert) \u2014 brief your group on a global issue and what to do about it",
+      "Strategic Thinking & Systems Thinking \u2014 map a system and find where change works",
+      "Debate, Argumentation & Ideological Clarity \u2014 hold your position under challenge, with adab"]),
+    area("L4-SV","Service & Community Engagement","O","Service Badge","Building what outlasts you",[
+      "Launch a Community Initiative \u2014 start something that did not exist before",
+      "Sustainable Community Projects \u2014 keep a project running for a full year",
+      "Social Entrepreneurship \u2014 make a service pay for itself",
+      "Build Networks for Good \u2014 connect three organisations around one aim",
+      "Train & Multiply Leaders \u2014 train two people to do what you do",
+      "Crisis Response & Community Support \u2014 take a role in a real response effort",
+      "Civic Responsibility & Social Awareness \u2014 represent young people to a public body",
+      "Community Awareness (Ummah Lens) \u2014 lead a campaign for a community in need"]),
+    area("L4-PX","Physical / Experiential Learning","P","Physical Badge","Coaching and leading at scale",[
+      "Major Physical Challenge \u2014 set and complete a demanding personal challenge",
+      "Community Fitness Initiative \u2014 start a fitness activity open to the community",
+      "Coaching & Mentorship \u2014 coach a group through a full season",
+      "Outdoor Leadership Program \u2014 qualify to lead others outdoors",
+      "Health & Lifestyle Transformation \u2014 sustain a healthy routine for a year and log it",
+      "Lead Large-Scale Camps / Expeditions \u2014 lead a camp or expedition from planning to debrief"])]}
 ]};
+
+/* objective and pillar lookups used by the seed data below */
+function levelOf(levelId){ return PROGRAM.levels.filter(function(l){ return l.id===levelId; })[0]; }
+function areaObjIds(areaId){
+  let out = [];
+  PROGRAM.levels.forEach(function(l){ l.areas.forEach(function(a){
+    if(a.id===areaId) out = a.objectives.map(function(o){ return o.id; }); }); });
+  return out;
+}
+function levelObjIds(levelId){
+  const out = [];
+  levelOf(levelId).areas.forEach(function(a){ a.objectives.forEach(function(o){ out.push(o.id); }); });
+  return out;
+}
+function levelAreaIds(levelId){ return levelOf(levelId).areas.map(function(a){ return a.id; }); }
 
 /* ============================================================
    2. SEED DATA
    ============================================================ */
 const GUIDELINES = [
   {t:"Goals are agreed, not imposed", b:"Every goal is either proposed by the participant or acknowledged by them before it becomes active. A goal a young person has not acknowledged is not yet real work."},
-  {t:"One badge, one developmental area", b:"A badge is awarded only when every objective in that area has been met. Objectives are not partially credited \u2014 split them into smaller tasks instead."},
-  {t:"Spiritual objectives are confirmed by the madrassah teacher", b:"Hifz, salah logs and seerah presentations are signed off by the teacher who heard them, and that name goes in the supervisor field of the task record."},
+  {t:"One badge, one pillar", b:"Each level holds four pillar badges \u2014 Personal, Skill, Service and Physical. A badge is awarded only when every objective in that pillar has been met. Objectives are not partially credited \u2014 split them into smaller tasks instead."},
+  {t:"A level needs more than badges", b:"All four pillar badges, a written reflection and the final challenge are required before the level award is granted. Badges alone do not close a level."},
+  {t:"Personal Development objectives are confirmed by the madrassah teacher", b:"Hifz, salah logs and tadabbur presentations are signed off by the teacher who heard them, and that name goes in the supervisor field of the task record."},
   {t:"Tasks carry the evidence", b:"Record the supervisor, location, dates and skills developed for each task. The task record is what an assessor reads at level review."},
   {t:"Outings need a named supervisor", b:"Hikes, camps, courses and service away from the institution are only assigned once a supervisor is named on the task and the guardian has agreed."},
-  {t:"Levels unlock in order", b:"A participant only sees the next level once all four badges in the current level are earned. Do not set goals in locked areas."},
+  {t:"Levels unlock in order", b:"Foundation, then Growth, then Leadership, then Purpose. A participant only sees the next level once the current level award is granted. Do not set goals in locked pillars."},
   {t:"Under 13s need a guardian on file", b:"A guardian email address is required before an account for a participant under 13 is activated, and password resets are sent there."}
+];
+
+/* the six stages every participant passes through \u2014 spec \u00a74.1 */
+const JOURNEY = [
+  {id:"enrollment",  label:"Enrollment",               note:"Account created, mentor assigned"},
+  {id:"goalsetting", label:"Goal Setting",             note:"Goals agreed in the four pillars"},
+  {id:"activity",    label:"Activity Participation",   note:"Tasks and challenges under way"},
+  {id:"mentorship",  label:"Mentorship / Supervision", note:"Supervised, with notes on the record"},
+  {id:"assessment",  label:"Assessment",               note:"Tasks recorded met or not met"},
+  {id:"award",       label:"Certification / Award",    note:"Pillar badges and the level award"}
 ];
 
 const state = {
@@ -358,61 +495,65 @@ const state = {
     {id:"u-h1", role:"helper", name:"Riyad Joomun",    title:"Helper",         since:"2024", colour:"#5D6A85"},
     {id:"u-a1", role:"admin",  name:"Fatimah Cassim",  title:"Programme Head", since:"2019", colour:"#0F1F42"}
   ],
-  /* per participant: met objective ids, badges (area ids), level awards, current level */
+  /* per participant: met objective ids, pillar badges (area ids), level awards,
+     level reflections and completed final challenges, current level */
   progress:{
-    "u-p1":{level:1, met:["L1-PH-o1","L1-PH-o2","L1-PH-o3","L1-SO-o1","L1-SO-o2","L1-IN-o1"], badges:["L1-PH"], awards:[]},
-    "u-p2":{level:2, met:[
-        "L1-PH-o1","L1-PH-o2","L1-PH-o3","L1-SO-o1","L1-SO-o2","L1-SO-o3",
-        "L1-IN-o1","L1-IN-o2","L1-IN-o3","L1-SP-o1","L1-SP-o2","L1-SP-o3",
-        "L2-PH-o1","L2-PH-o2","L2-PH-o3","L2-IN-o1","L2-IN-o2"],
-      badges:["L1-PH","L1-SO","L1-IN","L1-SP","L2-PH"], awards:[1]},
-    "u-p3":{level:3, met:(function(){
-        const m=[]; ["L1","L2"].forEach(function(l){ ["PH","SO","IN","SP"].forEach(function(a){
-          for(let i=1;i<=3;i++) m.push(l+"-"+a+"-o"+i); }); });
-        m.push("L3-PH-o1","L3-PH-o2","L3-SO-o1"); return m; })(),
-      badges:["L1-PH","L1-SO","L1-IN","L1-SP","L2-PH","L2-SO","L2-IN","L2-SP"], awards:[1,2]},
-    "u-p4":{level:1, met:[], badges:[], awards:[]}
+    "u-p1":{level:1,
+      met:areaObjIds("L1-PX").concat(["L1-SV-o1","L1-SV-o5","L1-SK-o1","L1-SK-o4","L1-PD-o1","L1-PD-o3"]),
+      badges:["L1-PX"], awards:[], reflections:{}, challenges:[]},
+    "u-p2":{level:2,
+      met:levelObjIds(1).concat(areaObjIds("L2-PX"), ["L2-SK-o1","L2-SK-o3","L2-PD-o1","L2-PD-o5"]),
+      badges:levelAreaIds(1).concat(["L2-PX"]), awards:[1],
+      reflections:{"1":{text:"I used to pray when I was reminded. Now I notice the adhan myself.", at:"2026-01-22"}},
+      challenges:[1]},
+    "u-p3":{level:3,
+      met:levelObjIds(1).concat(levelObjIds(2), ["L3-PX-o3","L3-PX-o4","L3-SV-o3"]),
+      badges:levelAreaIds(1).concat(levelAreaIds(2)), awards:[1,2],
+      reflections:{"1":{text:"The routine was the hardest part, and the part that changed the most.", at:"2025-03-14"},
+                   "2":{text:"Six weeks of training taught me that consistency beats effort in bursts.", at:"2026-02-08"}},
+      challenges:[1,2]},
+    "u-p4":{level:1, met:[], badges:[], awards:[], reflections:{}, challenges:[]}
   },
   goals:[
-    {id:"g1", participantId:"u-p1", areaId:"L1-SO", title:"Saturday games and clean-up at the madrassah",
-     detail:"Partner games after Saturday class, then help put the room back in order.",
-     objectiveIds:["L1-SO-o2","L1-SO-o3"], status:"Active", proposedBy:"mentor", authorId:"u-m1",
+    {id:"g1", participantId:"u-p1", areaId:"L1-SV", title:"Saturday kindness and clean-up at the madrassah",
+     detail:"Help set up and tidy after Saturday class, and keep the weekly kindness challenge going.",
+     objectiveIds:["L1-SV-o2","L1-SV-o4"], status:"Active", proposedBy:"mentor", authorId:"u-m1",
      acknowledged:true, createdAt:"2026-07-04",
-     comments:[{by:"u-m1", text:"Maryam, this follows on from your Quwwah badge. Same group, straight after class.", at:"2026-07-04"},
+     comments:[{by:"u-m1", text:"Maryam, this follows on from your Physical Badge. Same group, straight after class.", at:"2026-07-04"},
                {by:"u-p1", text:"ok! Zainab is in that group too", at:"2026-07-05"}]},
-    {id:"g2", participantId:"u-p1", areaId:"L1-IN", title:"Read four books with Ammi",
+    {id:"g2", participantId:"u-p1", areaId:"L1-SK", title:"Read four books with Ammi",
      detail:"Any four books. Tell your helper about your favourite one.",
-     objectiveIds:["L1-IN-o1"], status:"Completed", proposedBy:"participant", authorId:"u-p1",
+     objectiveIds:["L1-SK-o1"], status:"Completed", proposedBy:"participant", authorId:"u-p1",
      acknowledged:true, createdAt:"2026-06-12", comments:[]},
-    {id:"g3", participantId:"u-p2", areaId:"L2-IN", title:"Basic first aid course, then teach it back",
+    {id:"g3", participantId:"u-p2", areaId:"L2-SK", title:"Basic first aid course, then teach it back",
      detail:"Four Thursdays at the Red Cross hall in Beau Bassin, then a 5-minute talk to the group.",
-     objectiveIds:["L2-IN-o1","L2-IN-o2"], status:"Active", proposedBy:"participant", authorId:"u-p2",
+     objectiveIds:["L2-SK-o2","L2-SK-o6"], status:"Active", proposedBy:"participant", authorId:"u-p2",
      acknowledged:true, createdAt:"2026-08-01",
      comments:[{by:"u-m1", text:"Approved. Book the Thursday slot before it fills up.", at:"2026-08-02"}]},
-    {id:"g4", participantId:"u-p2", areaId:"L2-SO", title:"Serve at the community iftar with three friends",
+    {id:"g4", participantId:"u-p2", areaId:"L2-SV", title:"Serve at the community iftar with three friends",
      detail:"Recruit a team of four, agree who does what in the kitchen, and log the hours.",
-     objectiveIds:["L2-SO-o1","L2-SO-o2"], status:"Proposed", proposedBy:"participant", authorId:"u-p2",
+     objectiveIds:["L2-SV-o5","L2-SV-o6"], status:"Proposed", proposedBy:"participant", authorId:"u-p2",
      acknowledged:false, createdAt:"2026-08-29",
      comments:[{by:"u-p2", text:"Masjid Noor kitchen on the last Friday. Can Riyad supervise?", at:"2026-08-29"}]},
-    {id:"g5", participantId:"u-p3", areaId:"L3-SO", title:"Co-run two Level 1 sessions",
-     detail:"Plan with Yusuf, then lead the warm-up and one activity for the Base Camp group.",
-     objectiveIds:["L3-SO-o1"], status:"Approved", proposedBy:"mentor", authorId:"u-m2",
+    {id:"g5", participantId:"u-p3", areaId:"L3-SV", title:"Co-run two Foundation sessions",
+     detail:"Plan with Yusuf, then lead the warm-up and one activity for the Foundation group.",
+     objectiveIds:["L3-SV-o2"], status:"Approved", proposedBy:"mentor", authorId:"u-m2",
      acknowledged:false, createdAt:"2026-09-01",
      comments:[{by:"u-m2", text:"Sumayyah, read this and acknowledge it so we can start next week.", at:"2026-09-01"}]},
-    {id:"g6", participantId:"u-p3", areaId:"L3-PH", title:"Twelve-week endurance plan",
-     detail:"Build up to the 10 km trail run in December. Log every session.",
-     objectiveIds:["L3-PH-o3"], status:"Active", proposedBy:"participant", authorId:"u-p3",
+    {id:"g6", participantId:"u-p3", areaId:"L3-PX", title:"Captain the squad through the season",
+     detail:"Lead the warm-ups, set the team rota, and debrief after every fixture.",
+     objectiveIds:["L3-PX-o1"], status:"Active", proposedBy:"participant", authorId:"u-p3",
      acknowledged:true, createdAt:"2026-07-19", comments:[]}
   ],
   tasks:[
-    {id:"t1", goalId:"g1", participantId:"u-p1", title:"Saturday partner games \u2014 week 1",
+    {id:"t1", goalId:"g1", participantId:"u-p1", title:"Set up the hall before Saturday class \u2014 session 1",
      status:"Met", dateStarted:"2026-07-11", dateCompleted:"2026-07-11", supervisor:"Riyad Joomun",
      location:"Madrassah hall, Plaine Verte", skills:["Cooperation","Listening"],
-     comments:[{by:"u-h1", text:"Paired with Zainab for skittles. Joined in for the whole hour.", at:"2026-07-11"}]},
+     comments:[{by:"u-h1", text:"Paired with Zainab to lay out the mats. Stayed for the whole hour.", at:"2026-07-11"}]},
     {id:"t2", goalId:"g1", participantId:"u-p1", title:"Tidy the classroom with the group",
      status:"Met", dateStarted:"2026-07-11", dateCompleted:"2026-07-18", supervisor:"Riyad Joomun",
      location:"Madrassah hall, Plaine Verte", skills:["Responsibility"], comments:[]},
-    {id:"t3", goalId:"g1", participantId:"u-p1", title:"Help set out the mats before class",
+    {id:"t3", goalId:"g1", participantId:"u-p1", title:"Help a classmate every week this term",
      status:"Assigned", dateStarted:"", dateCompleted:"", supervisor:"Riyad Joomun",
      location:"Madrassah hall, Plaine Verte", skills:["Responsibility"], comments:[]},
     {id:"t4", goalId:"g3", participantId:"u-p2", title:"First aid course \u2014 weeks 1 to 4",
@@ -423,15 +564,15 @@ const state = {
     {id:"t5", goalId:"g3", participantId:"u-p2", title:"Give the 5-minute talk to the group",
      status:"Assigned", dateStarted:"2026-09-03", dateCompleted:"", supervisor:"Nabihah Emrith",
      location:"Islamic Cultural College, room 4", skills:["Public speaking"], comments:[]},
-    {id:"t6", goalId:"g6", participantId:"u-p3", title:"Weeks 1\u20134 training block",
+    {id:"t6", goalId:"g6", participantId:"u-p3", title:"Lead the warm-ups \u2014 fixtures 1 to 4",
      status:"Met", dateStarted:"2026-07-22", dateCompleted:"2026-08-16", supervisor:"Yusuf Hosany",
-     location:"Trou aux Cerfs track", skills:["Endurance","Self-discipline"], comments:[]},
-    {id:"t7", goalId:"g6", participantId:"u-p3", title:"Weeks 5\u20138 training block",
+     location:"Trou aux Cerfs track", skills:["Team leadership","Self-discipline"], comments:[]},
+    {id:"t7", goalId:"g6", participantId:"u-p3", title:"Set the team rota and debrief \u2014 fixtures 5 to 8",
      status:"Assigned", dateStarted:"2026-08-19", dateCompleted:"", supervisor:"Yusuf Hosany",
-     location:"Trou aux Cerfs track", skills:["Endurance"], comments:[]}
+     location:"Trou aux Cerfs track", skills:["Planning"], comments:[]}
   ],
   log:[
-    {at:"2026-09-01 09:12", who:"u-m2", what:"Set goal \u201cCo-run two Level 1 sessions\u201d for Sumayyah Timol"},
+    {at:"2026-09-01 09:12", who:"u-m2", what:"Set goal \u201cCo-run two Foundation sessions\u201d for Sumayyah Timol"},
     {at:"2026-08-29 17:40", who:"u-p2", what:"Proposed goal \u201cServe at the community iftar with three friends\u201d"},
     {at:"2026-08-27 15:05", who:"u-m1", what:"Marked task \u201cFirst aid course \u2014 weeks 1 to 4\u201d as Met"},
     {at:"2026-08-21 10:31", who:"u-a1", what:"Signed in"}
@@ -495,6 +636,45 @@ function overallPct(pid){
   return Math.round(prog(pid).badges.length / total * 100);
 }
 
+/* level completion = 4 pillar badges + reflection + final challenge */
+const hasReflection = function(pid, levelId){
+  const r = prog(pid).reflections || {};
+  return !!r[levelId];
+};
+const hasChallenge = function(pid, levelId){ return (prog(pid).challenges||[]).indexOf(levelId)>-1; };
+function levelComplete(pid, levelId){
+  const lp = levelProgress(pid, levelId);
+  return lp.earned===lp.total && hasReflection(pid, levelId) && hasChallenge(pid, levelId);
+}
+function levelOutstanding(pid, levelId){
+  const lp = levelProgress(pid, levelId), out = [];
+  if(lp.earned < lp.total) out.push((lp.total-lp.earned) + " pillar badge" + ((lp.total-lp.earned)===1?"":"s"));
+  if(!hasReflection(pid, levelId)) out.push("the reflection");
+  if(!hasChallenge(pid, levelId)) out.push("the final challenge");
+  return out;
+}
+function listJoin(items){
+  if(items.length<2) return items.join("");
+  return items.slice(0,-1).join(", ") + " and " + items[items.length-1];
+}
+
+/* where a participant sits on the six-stage journey */
+function journeyOf(pid){
+  const gs = goalsOf(pid), ts = tasksOf(pid), p = prog(pid);
+  const done = {
+    enrollment: true,
+    goalsetting: gs.length>0,
+    activity: ts.length>0,
+    mentorship: ts.some(function(t){ return t.comments.length>0; }) ||
+                gs.some(function(g){ return g.comments.length>0; }),
+    assessment: ts.some(function(t){ return t.status!=="Assigned"; }),
+    award: p.badges.length>0
+  };
+  let current = JOURNEY.length-1;
+  for(let i=0;i<JOURNEY.length;i++){ if(!done[JOURNEY[i].id]){ current = i; break; } }
+  return {done:done, current:current, stage:JOURNEY[current]};
+}
+
 /* ============================================================
    4. LOG + TOASTS
    ============================================================ */
@@ -512,8 +692,9 @@ function toast(msg, kind){
 
 /* ============================================================
    5. PROGRESSION ENGINE  (spec §4.3, UC-07)
-   badge  = every objective in a developmental area met
-   award  = every badge in a level earned -> next level unlocks
+   pillar badge = every objective in that pillar met
+   level award  = 4 pillar badges + reflection + final challenge
+                  -> the next level unlocks
    ============================================================ */
 let justStruck = [];   // area ids to animate on next render
 
@@ -531,12 +712,16 @@ function runProgression(pid){
         logIt("Badge \u201c" + a.badge + "\u201d awarded to " + pu.name + " (" + a.name + ", " + lv.title + ")");
       }
     });
-    const complete = lv.areas.every(function(a){ return p.badges.indexOf(a.id)>-1; });
-    if(complete && p.awards.indexOf(lv.id)===-1){
+    const badgesDone = lv.areas.every(function(a){ return p.badges.indexOf(a.id)>-1; });
+    if(badgesDone && p.awards.indexOf(lv.id)===-1 && !levelComplete(pid, lv.id)){
+      news.push("All four pillar badges earned in <b>" + esc(lv.title) + "</b>. " +
+        "Still needed for the " + esc(lv.badgeName) + ": " + esc(listJoin(levelOutstanding(pid, lv.id))) + ".");
+    }
+    if(levelComplete(pid, lv.id) && p.awards.indexOf(lv.id)===-1){
       p.awards.push(lv.id);
-      news.push("<b>" + esc(lv.title) + " Award</b> granted. " +
+      news.push("<b>" + esc(lv.badgeName) + "</b> awarded \u2014 " + esc(lv.title) + " complete. " +
         (lv.id<4 ? esc(PROGRAM.levels[lv.id].title) + " is now unlocked." : "The programme is complete."));
-      logIt(lv.title + " Award granted to " + pu.name + (lv.id<4 ? "; advanced to Level " + (lv.id+1) : "; programme complete"));
+      logIt(lv.badgeName + " granted to " + pu.name + (lv.id<4 ? "; advanced to " + PROGRAM.levels[lv.id].title : "; programme complete"));
       if(lv.id < 4 && p.level === lv.id) p.level = lv.id + 1;
     }
   });
@@ -663,6 +848,33 @@ ACT.reopenTask = function(tid){
   render();
 };
 
+/* --- level completion: reflection + final challenge --- */
+ACT.submitReflection = function(levelId){
+  const lid = +levelId, pid = me().id, box = $("#refl-" + lid);
+  const text = box ? box.value.trim() : "";
+  if(!text){ toast("Write your reflection before you submit it."); return; }
+  const p = prog(pid);
+  p.reflections = p.reflections || {};
+  p.reflections[lid] = {text:text, at:today()};
+  logIt("Submitted the " + levelOf(lid).title + " reflection");
+  toast("Reflection saved for " + esc(levelOf(lid).title) + ".");
+  runProgression(pid);
+  render();
+};
+
+ACT.recordChallenge = function(pid, levelId){
+  const lid = +levelId, p = prog(pid);
+  p.challenges = p.challenges || [];
+  const i = p.challenges.indexOf(lid);
+  if(i>-1){ p.challenges.splice(i,1); p.awards = p.awards.filter(function(a){ return a!==lid; }); }
+  else p.challenges.push(lid);
+  const top = p.awards.length ? Math.max.apply(null, p.awards) : 0;
+  p.level = Math.min(4, Math.max(1, top + 1));
+  logIt((i>-1?"Cleared":"Recorded") + " the " + levelOf(lid).title + " final challenge for " + user(pid).name);
+  runProgression(pid);
+  render();
+};
+
 ACT.comment = function(kind, id){
   const box = $("#cmt-" + id);
   const text = box.value.trim();
@@ -717,9 +929,9 @@ ACT.registerParticipant = function(){
   const palette = ["#2A4D9B","#27AE60","#B8860F","#8E44AD","#16A085","#C0392B"];
   state.users.push({id:id, role:"participant", name:name, age:age, guardian:guardian, mentorId:mentorId,
     helperIds:me().role==="helper" ? [me().id] : [], joined:today(), school:school, colour:palette[state.users.length % palette.length]});
-  state.progress[id] = {level:1, met:[], badges:[], awards:[]};
+  state.progress[id] = {level:1, met:[], badges:[], awards:[], reflections:{}, challenges:[]};
   logIt("Registered participant " + name + " and assigned " + user(mentorId).name);
-  toast("<b>" + esc(name) + "</b> registered at Level 1 with " + esc(user(mentorId).name) + ".");
+  toast("<b>" + esc(name) + "</b> registered at Foundation level with " + esc(user(mentorId).name) + ".");
   render();
 };
 
@@ -755,12 +967,12 @@ ACT.removeStaff = function(id){
 /* --- programme structure editing (UC-08) --- */
 ACT.renameArea = function(areaId){
   const a = findArea(areaId).area;
-  const n = prompt("Developmental area name", a.name); if(n===null) return;
-  const b = prompt("Badge name awarded for this area", a.badge); if(b===null) return;
+  const n = prompt("Pillar name", a.name); if(n===null) return;
+  const b = prompt("Badge name awarded for this pillar", a.badge); if(b===null) return;
   const gl = prompt("Plain-language meaning of the badge name", a.gloss); if(gl===null) return;
   a.name = n.trim() || a.name; a.badge = b.trim() || a.badge; a.gloss = gl.trim() || a.gloss;
-  logIt("Renamed area to \u201c" + a.name + "\u201d with badge \u201c" + a.badge + "\u201d");
-  toast("Area updated for every participant.");
+  logIt("Renamed pillar to \u201c" + a.name + "\u201d with badge \u201c" + a.badge + "\u201d");
+  toast("Pillar updated for every participant.");
   render();
 };
 ACT.addObjective = function(areaId){
@@ -768,13 +980,13 @@ ACT.addObjective = function(areaId){
   const t = prompt("New objective"); if(!t || !t.trim()) return;
   a.objectives.push({id:areaId + "-o" + (a.objectives.length+1) + "-" + uid(""), text:t.trim()});
   logIt("Added an objective to " + a.name);
-  toast("Objective added. Badges in this area now need one more objective.");
+  toast("Objective added. Badges in this pillar now need one more objective.");
   participants().forEach(function(p){ runProgression(p.id); });
   render();
 };
 ACT.removeObjective = function(areaId, objId){
   const a = findArea(areaId).area;
-  if(a.objectives.length<=1){ toast("An area needs at least one objective."); return; }
+  if(a.objectives.length<=1){ toast("A pillar needs at least one objective."); return; }
   a.objectives = a.objectives.filter(function(o){ return o.id!==objId; });
   logIt("Removed an objective from " + a.name);
   participants().forEach(function(p){ runProgression(p.id); });
@@ -817,7 +1029,7 @@ function avatar(u, cls){
 function medallion(areaObj, earned, size, ribbon){
   const cls = "medal " + (size||"") + (earned ? "" : " locked") + (earned && justStruck.indexOf(areaObj.id)>-1 ? " struck" : "");
   const face = earned ? esc(areaObj.letter) : "\uD83D\uDD12";
-  const title = earned ? areaObj.badge + " badge earned" : areaObj.badge + " badge not yet earned";
+  const title = earned ? areaObj.badge + " earned" : areaObj.badge + " not yet earned";
   return '<span class="' + cls + '" title="' + esc(title) + '" aria-label="' + esc(title) + '">' + face +
     (earned && ribbon ? '<span class="ribbon">' + esc(ribbon) + "</span>" : "") + "</span>";
 }
@@ -855,10 +1067,24 @@ function thread(kind, id, comments, placeholder){
   return h;
 }
 
+/* the six-stage participant journey — spec §4.1. pid null renders the reference strip */
+function journeyStrip(pid, opts){
+  opts = opts || {};
+  const j = pid ? journeyOf(pid) : null;
+  return '<div class="journey">' + JOURNEY.map(function(s, i){
+    const done = j && j.done[s.id];
+    const cls = !j ? "" : done ? "done" : (i===j.current ? "now" : "");
+    return '<div class="jstep ' + cls + '"><span class="jdot">' + (done ? "\u2713" : (i+1)) + "</span>" +
+      "<b>" + esc(s.label) + "</b>" + (opts.compact ? "" : "<span>" + esc(s.note) + "</span>") + "</div>";
+  }).join("") + "</div>";
+}
+
 /* the pathway trail — spec §4.5 */
 function trail(pid, opts){
   opts = opts || {};
   const p = prog(pid);
+  const mine = me().role==="participant" && me().id===pid;
+  const manages = can.setGoals() && (me().role==="admin" || (user(pid)||{}).mentorId===me().id);
   let h = '<div class="trail">';
   PROGRAM.levels.forEach(function(lv, i){
     const unlocked = isUnlocked(pid, lv.id);
@@ -867,11 +1093,11 @@ function trail(pid, opts){
     if(i) h += '<div class="link"></div>';
     h += '<section class="camp' + (unlocked?"":" locked") + '">' +
       '<header class="banner"><span class="num">' + lv.id + "</span>" +
-      "<span><b>" + esc(lv.camp) + "</b><span>" + esc(lv.title) + " \u00b7 " + esc(lv.ages) + "</span></span>" +
-      '<span class="state">' + (unlocked ? lp.earned + " of " + lp.total + " badges" : "Locked") + "</span></header>";
+      "<span><b>" + esc(lv.title) + "</b><span>" + esc(lv.badgeName) + " \u00b7 \u201c" + esc(lv.identity) + "\u201d</span></span>" +
+      '<span class="state">' + (unlocked ? lp.earned + " of " + lp.total + " pillar badges" : "Locked") + "</span></header>";
     if(!unlocked){
-      h += '<p class="small muted" style="margin:0 0 12px">Earn all four badges in ' +
-        esc(PROGRAM.levels[lv.id-2].title) + " to open this camp.</p>";
+      h += '<p class="small muted" style="margin:0 0 12px">Complete ' +
+        esc(PROGRAM.levels[lv.id-2].title) + " to unlock this level.</p>";
     }
     h += '<div class="nodes">';
     lv.areas.forEach(function(a){
@@ -886,16 +1112,48 @@ function trail(pid, opts){
     });
     h += "</div>";
     h += '<div class="chest"><span class="stem"></span><span class="box' + (won?" won":"") + '">' +
-      (won ? "\uD83C\uDFC5 " + esc(lv.title) + " Award earned" : "\uD83D\uDCE6 " + esc(lv.title) + " Award \u2014 " + (lp.total-lp.earned) + " badge" + ((lp.total-lp.earned)===1?"":"s") + " to go") +
-      "</span></div></section>";
+      (won ? "\uD83C\uDFC5 " + esc(lv.badgeName) + " earned"
+           : "\uD83D\uDCE6 " + esc(lv.badgeName) + " \u2014 " + esc(listJoin(levelOutstanding(pid, lv.id))) + " to go") +
+      "</span></div>";
+    if(unlocked && !won) h += capstone(pid, lv, mine, manages);
+    h += "</section>";
   });
   const doneAll = p.awards.length===4;
   h += '<div class="link"></div><section class="camp' + (doneAll?"":" locked") + '" style="text-align:center;padding:18px">' +
     '<div class="row" style="justify-content:center;gap:12px">' +
     '<span class="medal lg' + (doneAll?"":" locked") + '">' + (doneAll ? "\u2605" : "\uD83D\uDD12") + "</span>" +
     "<div style=\"text-align:left\"><h3>Programme completion</h3><p class=\"small muted\" style=\"margin:2px 0 0\">" +
-    (doneAll ? "All four level awards earned." : "Awarded after all four level awards.") + "</p></div></div></section>";
+    (doneAll ? "Pathfinder, Builder, Navigator and Legacy all earned." : "Awarded after all four level badges.") + "</p></div></div></section>";
   return h + "</div>";
+}
+
+/* reflection + final challenge panel that closes a level */
+function capstone(pid, lv, mine, manages){
+  const refl = (prog(pid).reflections||{})[lv.id];
+  const chal = hasChallenge(pid, lv.id);
+  let h = '<div class="capstone"><div class="cap"><div class="spread">' +
+    '<b class="small">\u270D Reflection</b><span class="chip ' + (refl?"go":"flat") + '">' + (refl?"Submitted":"Outstanding") + "</span></div>" +
+    '<p class="tiny muted" style="margin:5px 0 0">' + esc(lv.reflection) + "</p>";
+  if(refl){
+    h += '<p class="small" style="margin:8px 0 0">\u201c' + esc(refl.text) + '\u201d</p>' +
+      '<div class="tiny muted">' + fmtDate(refl.at) + "</div>";
+  } else if(mine){
+    h += '<textarea id="refl-' + lv.id + '" style="margin-top:8px" placeholder="Write it in your own words"></textarea>' +
+      '<button class="btn sm" style="margin-top:6px" data-act="submitReflection" data-id="' + lv.id + '">Submit reflection</button>';
+  } else {
+    h += '<p class="tiny muted" style="margin:8px 0 0">The participant writes this themselves.</p>';
+  }
+  h += "</div>";
+  h += '<div class="cap"><div class="spread">' +
+    '<b class="small">\uD83C\uDFAF Final challenge</b><span class="chip ' + (chal?"go":"flat") + '">' + (chal?"Completed":"Outstanding") + "</span></div>" +
+    '<p class="tiny muted" style="margin:5px 0 0">' + esc(lv.challenge) + "</p>";
+  if(manages){
+    h += '<button class="btn ' + (chal?"ghost":"go") + ' sm" style="margin-top:8px" data-act="recordChallenge" data-id="' +
+      pid + '" data-obj="' + lv.id + '">' + (chal ? "Clear the record" : "Record as completed") + "</button>";
+  } else {
+    h += '<p class="tiny muted" style="margin:8px 0 0">Your mentor or coach records this.</p>';
+  }
+  return h + "</div></div>";
 }
 
 function nextStep(pid){
@@ -916,7 +1174,7 @@ function nextStep(pid){
     });
   });
   if(closest) return {text:"You are " + closest.left + " objective" + (closest.left===1?"":"s") +
-    " from the <b>" + esc(closest.area.badge) + "</b> badge. Propose a goal in " + esc(closest.area.name) + ".", view:"goals"};
+    " from the <b>" + esc(closest.area.badge) + "</b> in " + esc(closest.area.name) + ". Propose a goal in that pillar.", view:"goals"};
   return {text:"Everything on your pathway is complete. \uD83C\uDF89", view:"pathway"};
 }
 
@@ -934,14 +1192,19 @@ function vParticipantHome(){
 
   let h = '<div class="hero">' + avatar(u, "lg") +
     '<div class="who"><h1>Hello, ' + esc(u.name.split(" ")[0]) + "</h1>" +
-    "<p>" + esc(lv.camp) + " \u00b7 " + esc(lv.title) + " \u00b7 mentor " + esc(user(u.mentorId).name) + "</p>" +
+    "<p>" + esc(lv.title) + " level \u00b7 working towards the " + esc(lv.badgeName) +
+    " \u00b7 mentor " + esc(user(u.mentorId).name) + "</p>" +
     '<div class="nudge">' + ns.text + " " +
     '<button class="linkish" style="color:#F2C94C" data-act="go" data-id="' + ns.view + '">Take me there</button></div></div>' +
-    ring(lp.pct, lp.earned + "/" + lp.total, "badges in " + lv.title) + "</div>";
+    ring(lp.pct, lp.earned + "/" + lp.total, "pillar badges in " + lv.title) + "</div>";
+
+  h += '<div class="panel" style="margin-top:14px"><h2>Your journey</h2>' +
+    '<p class="sub">Every participant moves through these six stages. You are at <b>' +
+    esc(journeyOf(u.id).stage.label) + "</b>.</p>" + journeyStrip(u.id) + "</div>";
 
   h += '<div class="grid g4" style="margin-top:14px">' +
-    '<div class="stat hi"><b>' + p.badges.length + '</b><span>badges earned of ' + allAreas().length + "</span></div>" +
-    '<div class="stat"><b>' + p.awards.length + '</b><span>level awards</span></div>' +
+    '<div class="stat hi"><b>' + p.badges.length + '</b><span>pillar badges of ' + allAreas().length + "</span></div>" +
+    '<div class="stat"><b>' + p.awards.length + '</b><span>level badges</span></div>' +
     '<div class="stat"><b>' + active.length + '</b><span>active goals</span></div>' +
     '<div class="stat"><b>' + openTasks.length + '</b><span>open tasks</span></div></div>';
 
@@ -1008,20 +1271,21 @@ function vParticipantHome(){
 
 function vParticipantPathway(){
   const u = me();
-  return '<div class="pagehead"><h1>Your pathway</h1><p>Four camps, four badges in each. ' +
-    'Gold means earned. Tap a medal to see what it takes.</p></div>' + trail(u.id, {});
+  return '<div class="pagehead"><h1>Your pathway</h1><p>Foundation, Growth, Leadership and Purpose. ' +
+    'Four pillar badges in every level, then a reflection and a final challenge to close it. ' +
+    'Tap a medal to see what it takes.</p></div>' + trail(u.id, {});
 }
 
 function vParticipantBadges(){
   const u = me(), p = prog(u.id);
   let h = '<div class="pagehead"><h1>Badge case</h1><p>' + p.badges.length + " of " + allAreas().length +
-    " badges struck, and " + p.awards.length + " of 4 level awards.</p></div>";
+    " pillar badges struck, and " + p.awards.length + " of 4 level badges.</p></div>";
   PROGRAM.levels.forEach(function(lv){
     const unlocked = isUnlocked(u.id, lv.id);
-    h += '<div class="panel"><div class="spread"><div><h2>' + esc(lv.title) + " \u00b7 " + esc(lv.camp) + "</h2>" +
-      '<p class="sub" style="margin:2px 0 0">' + (p.awards.indexOf(lv.id)>-1 ? "Level award earned" :
-        unlocked ? levelProgress(u.id, lv.id).earned + " of 4 badges" : "Locked") + "</p></div>" +
-      (p.awards.indexOf(lv.id)>-1 ? '<span class="chip gold">\uD83C\uDFC5 Level award</span>' : "") + "</div>" +
+    h += '<div class="panel"><div class="spread"><div><h2>' + esc(lv.title) + " \u00b7 " + esc(lv.badgeName) + "</h2>" +
+      '<p class="sub" style="margin:2px 0 0">' + (p.awards.indexOf(lv.id)>-1 ? "\u201c" + esc(lv.identity) + "\u201d \u2014 earned" :
+        unlocked ? levelProgress(u.id, lv.id).earned + " of 4 pillar badges" : "Locked") + "</p></div>" +
+      (p.awards.indexOf(lv.id)>-1 ? '<span class="chip gold">\uD83C\uDFC5 ' + esc(lv.badgeName) + "</span>" : "") + "</div>" +
       '<div class="grid g4" style="margin-top:14px">';
     lv.areas.forEach(function(a){
       const earned = p.badges.indexOf(a.id)>-1;
@@ -1044,9 +1308,9 @@ function vParticipantGoals(){
   let h = '<div class="pagehead"><h1>Goals</h1><p>Anything you propose goes to ' + esc(user(u.mentorId).name) +
     ' first. Goals your mentor sets need your acknowledgement before they start.</p></div>';
 
-  h += '<div class="panel"><h2>Propose a goal</h2><p class="sub">Pick the area, say what you want to do, and tick the objectives it covers.</p>' +
+  h += '<div class="panel"><h2>Propose a goal</h2><p class="sub">Pick the pillar, say what you want to do, and tick the objectives it covers.</p>' +
     '<div class="grid g2"><div>' +
-    '<div class="field"><label class="f" for="ng-area">Developmental area</label><select id="ng-area" data-act="ngArea">';
+    '<div class="field"><label class="f" for="ng-area">Core pillar</label><select id="ng-area" data-act="ngArea">';
   unlockedAreas.forEach(function(x){
     h += '<option value="' + x.area.id + '">' + esc(x.level.title) + " \u00b7 " + esc(x.area.name) + " (" + esc(x.area.badge) + ")</option>";
   });
@@ -1134,7 +1398,7 @@ function vParticipantProfile(){
     '<div class="panel"><h2>Programme record</h2><p class="sub">Read-only.</p><div class="list">' +
     ro("Current level", PROGRAM.levels.filter(function(l){ return l.id===p.level; })[0].title) +
     ro("Badges earned", p.badges.length + " of " + allAreas().length) +
-    ro("Level awards", p.awards.length ? p.awards.map(function(i){ return "Level " + i; }).join(", ") : "None yet") +
+    ro("Level badges", p.awards.length ? p.awards.map(function(i){ return levelOf(i).badgeName; }).join(", ") : "None yet") +
     ro("Mentor", user(u.mentorId).name) +
     ro("Helper", u.helperIds.length ? user(u.helperIds[0]).name : "None assigned") +
     ro("Joined", fmtDate(u.joined)) + "</div></div></div>";
@@ -1177,7 +1441,7 @@ function pendingApprovals(){
 function participantRegistrationForm(){
   const current = me(), mentors = state.users.filter(function(u){ return u.role==="mentor"; });
   return '<div class="panel"><h2>Register a participant</h2>' +
-    '<p class="sub">Creates the account at Level 1 and assigns a mentor or coach.</p>' +
+    '<p class="sub">Creates the account at Foundation level and assigns a mentor or coach.</p>' +
     '<div class="field"><label class="f" for="rp-name">Full name</label><input id="rp-name" placeholder="First and last name"></div>' +
     '<div class="grid g2"><div class="field"><label class="f" for="rp-age">Age</label><input id="rp-age" type="number" min="5" max="20" placeholder="5\u201320"></div>' +
     '<div class="field"><label class="f" for="rp-school">School or group</label><input id="rp-school"></div></div>' +
@@ -1222,7 +1486,7 @@ function vRoster(){
       const pr = prog(p.id), lp = levelProgress(p.id, pr.level);
       const waiting = goalsOf(p.id).filter(function(g){ return g.status==="Proposed"; }).length;
       h += '<div class="item">' + avatar(p) + '<div class="grow"><b>' + esc(p.name) + "</b>" +
-        '<span class="tiny muted">Age ' + p.age + " \u00b7 " + esc(PROGRAM.levels[pr.level-1].camp) + " \u00b7 " +
+        '<span class="tiny muted">Age ' + p.age + " \u00b7 " + esc(PROGRAM.levels[pr.level-1].title) + " \u00b7 " +
         pr.badges.length + " badge" + (pr.badges.length===1?"":"s") + "</span>" +
         '<div class="bar" style="margin-top:6px;max-width:260px"><i style="width:' + lp.pct + '%"></i></div></div>' +
         (waiting ? '<span class="chip gold">' + waiting + " to approve</span>" : "") +
@@ -1276,19 +1540,23 @@ function vPerson(){
 
   let h = '<button class="linkish" data-act="go" data-id="roster" style="margin-bottom:12px">\u2190 Back to participants</button>';
   h += '<div class="hero">' + avatar(p, "lg") + '<div class="who"><h1>' + esc(p.name) + "</h1>" +
-    "<p>Age " + p.age + " \u00b7 " + esc(PROGRAM.levels[pr.level-1].camp) + " \u00b7 joined " + fmtDate(p.joined) +
+    "<p>Age " + p.age + " \u00b7 " + esc(PROGRAM.levels[pr.level-1].title) + " level \u00b7 joined " + fmtDate(p.joined) +
     " \u00b7 mentor " + esc(user(p.mentorId).name) + "</p>" +
-    '<div class="row"><span class="chip gold">' + pr.badges.length + " badges</span>" +
-    '<span class="chip">' + pr.awards.length + " level awards</span>" +
+    '<div class="row"><span class="chip gold">' + pr.badges.length + " pillar badges</span>" +
+    '<span class="chip">' + pr.awards.length + " level badges</span>" +
     '<span class="chip">' + goalsOf(p.id).filter(function(g){ return g.status==="Active"; }).length + " active goals</span>" +
     (p.age<13 ? '<span class="chip ' + (p.guardian?"go":"no") + '">Guardian ' + (p.guardian?"on file":"missing") + "</span>" : "") +
-    "</div></div>" + ring(lp.pct, lp.earned + "/" + lp.total, "badges in level " + pr.level) + "</div>";
+    "</div></div>" + ring(lp.pct, lp.earned + "/" + lp.total, "pillar badges in " + PROGRAM.levels[pr.level-1].title) + "</div>";
 
   if(!mineToManage){
     h += '<div class="panel" style="margin-top:14px;border-color:#EBD48A;background:var(--gold-wash)">' +
       '<p class="small" style="margin:0">You are viewing this profile. Goals and tasks are managed by ' +
       esc(user(p.mentorId).name) + '.</p></div>';
   }
+
+  h += '<div class="panel" style="margin-top:14px"><h2>Journey stage</h2>' +
+    '<p class="sub">' + esc(p.name.split(" ")[0]) + " is at <b>" + esc(journeyOf(p.id).stage.label) + "</b>.</p>" +
+    journeyStrip(p.id) + "</div>";
 
   /* goals */
   h += '<div class="panel" style="margin-top:14px"><h2>Goals</h2><p class="sub">Status runs Proposed \u2192 Approved \u2192 Active \u2192 Completed.</p>';
@@ -1315,7 +1583,7 @@ function vPerson(){
     const areas = allAreas().filter(function(x){ return isUnlocked(p.id, x.level.id); });
     h += '<div class="grid g2"><div class="panel"><h2>Set a goal</h2>' +
       '<p class="sub">A goal you set is pre-approved, but ' + esc(p.name.split(" ")[0]) + ' must acknowledge it before tasks can be added.</p>' +
-      '<div class="field"><label class="f" for="sg-area">Developmental area</label><select id="sg-area" data-act="sgArea">' +
+      '<div class="field"><label class="f" for="sg-area">Core pillar</label><select id="sg-area" data-act="sgArea">' +
       areas.map(function(x){ return '<option value="' + x.area.id + '">' + esc(x.level.title) + " \u00b7 " + esc(x.area.name) + "</option>"; }).join("") +
       "</select></div>" +
       '<div class="field"><label class="f" for="sg-title">Goal title</label><input id="sg-title" placeholder="e.g. Six-week swimming block"></div>' +
@@ -1366,7 +1634,8 @@ function vPerson(){
   h += "</div>";
 
   /* pathway */
-  h += '<div class="panel"><h2>Pathway</h2><p class="sub">What ' + esc(p.name.split(" ")[0]) + " sees, with objective counts.</p>" +
+  h += '<div class="panel"><h2>Pathway</h2><p class="sub">What ' + esc(p.name.split(" ")[0]) + " sees, with objective counts. " +
+    "Record the final challenge here once it is done.</p>" +
     '<div style="margin-top:12px">' + trail(p.id, {}) + "</div></div>";
 
   /* details */
@@ -1396,7 +1665,7 @@ function vPerson(){
     h += '<div class="panel" style="border-color:#EBD48A"><h2>Adjust achievements</h2>' +
       '<p class="sub">Programme head only. Ticking an objective re-runs the badge and level checks immediately.</p>';
     PROGRAM.levels.filter(function(l){ return isUnlocked(p.id, l.id); }).forEach(function(l){
-      h += '<div class="tiny muted" style="margin:12px 0 6px">' + esc(l.title) + " \u00b7 " + esc(l.camp) + "</div><div class=\"grid g2\">";
+      h += '<div class="tiny muted" style="margin:12px 0 6px">' + esc(l.title) + " \u00b7 " + esc(l.badgeName) + "</div><div class=\"grid g2\">";
       l.areas.forEach(function(a){
         h += '<div style="border:1px solid var(--line);border-radius:12px;padding:11px">' +
           '<div class="row" style="gap:8px">' + medallion(a, pr.badges.indexOf(a.id)>-1, "sm", "") +
@@ -1418,18 +1687,32 @@ function vPerson(){
    ============================================================ */
 function vGuidelines(){
   let h = '<div class="pagehead"><h1>Programme guidelines</h1><p>The rules the system enforces, and the practice behind them.</p></div>';
+  h += '<div class="panel"><h2>Participant journey</h2><p class="sub">Every participant passes through these six stages, in order.</p>' +
+    journeyStrip(null) + "</div>";
+  h += '<div class="panel"><h2>The four core pillars</h2><p class="sub">Each level carries one badge in each pillar.</p><div class="grid g4">' +
+    PROGRAM.levels[0].areas.map(function(a){
+      return '<div style="text-align:center"><div style="font-size:1.6rem">' + (AREA_GLYPH[a.name]||"") + "</div>" +
+        '<div style="font-weight:750;margin-top:4px">' + esc(a.name) + "</div>" +
+        '<div class="tiny muted">' + esc(a.badge) + "</div></div>";
+    }).join("") + "</div></div>";
+  h += '<div class="panel"><h2>The four levels</h2><p class="sub">A level closes with its own badge and identity statement.</p><table>' +
+    "<thead><tr><th>Level</th><th>Badge</th><th>Identity</th></tr></thead><tbody>" +
+    PROGRAM.levels.map(function(l){
+      return "<tr><td><b>" + esc(l.title) + "</b></td><td>" + esc(l.badgeName) + "</td><td>\u201c" + esc(l.identity) + "\u201d</td></tr>";
+    }).join("") + "</tbody></table></div>";
   h += '<div class="panel">';
   GUIDELINES.forEach(function(g, i){
     h += (i?'<div class="divider"></div>':"") + "<h3>" + esc(g.t) + '</h3><p class="small muted" style="margin:4px 0 0;max-width:70ch">' + esc(g.b) + "</p>";
   });
   h += "</div>";
   h += '<div class="panel"><h2>Goal workflow</h2><p class="sub">Every goal follows these steps in order.</p><ol class="small" style="padding-left:20px;margin:0">' +
-    ["Goal created by the mentor, coach or the participant",
+    ["Goal created by the mentor, coach or the participant, in one of the four pillars",
      "Status is Proposed",
      "Mentor or coach approves it",
      "Participant acknowledges it",
      "Status becomes Active and tasks can be assigned",
-     "All tasks met completes the goal and re-checks the badge"].map(function(s){ return "<li>" + esc(s) + "</li>"; }).join("") +
+     "All tasks met completes the goal and re-checks the pillar badge",
+     "Four pillar badges, the reflection and the final challenge close the level"].map(function(s){ return "<li>" + esc(s) + "</li>"; }).join("") +
     "</ol></div>";
   return h;
 }
@@ -1446,11 +1729,11 @@ function vAdminHome(){
   const unack = state.goals.filter(function(g){ return g.status==="Approved" && !g.acknowledged; }).length;
   const missing = ps.filter(function(p){ return p.age<13 && !p.guardian; });
 
-  let h = '<div class="pagehead"><h1>Programme overview</h1><p>Every participant, mentor, coach and helper across the four levels.</p></div>';
+  let h = '<div class="pagehead"><h1>Programme overview</h1><p>Every participant, mentor, coach and helper across Foundation, Growth, Leadership and Purpose.</p></div>';
   h += '<div class="grid g4">' +
     '<div class="stat"><b>' + ps.length + '</b><span>participants</span></div>' +
-    '<div class="stat hi"><b>' + badges + '</b><span>badges awarded</span></div>' +
-    '<div class="stat"><b>' + awards + '</b><span>level awards</span></div>' +
+    '<div class="stat hi"><b>' + badges + '</b><span>pillar badges awarded</span></div>' +
+    '<div class="stat"><b>' + awards + '</b><span>level badges</span></div>' +
     '<div class="stat"><b>' + staff().length + '</b><span>mentors, coaches and helpers</span></div></div>';
   h += '<div class="grid g3" style="margin-top:14px">' +
     '<div class="stat"><b>' + prop + '</b><span>goals awaiting approval</span></div>' +
@@ -1469,7 +1752,7 @@ function vAdminHome(){
   PROGRAM.levels.forEach(function(l){
     const here = ps.filter(function(p){ return prog(p.id).level===l.id; });
     const pct = ps.length ? Math.round(here.length/ps.length*100) : 0;
-    h += '<div style="margin-bottom:11px"><div class="spread"><span class="small"><b>' + esc(l.title) + "</b> \u00b7 " + esc(l.camp) +
+    h += '<div style="margin-bottom:11px"><div class="spread"><span class="small"><b>' + esc(l.title) + "</b> \u00b7 " + esc(l.badgeName) +
       '</span><span class="small muted">' + here.length + "</span></div>" +
       '<div class="bar" style="margin-top:5px"><i style="width:' + Math.max(pct,2) + '%"></i></div></div>';
   });
@@ -1480,7 +1763,7 @@ function vAdminHome(){
 function vAdminPeople(){
   let h = '<div class="pagehead"><h1>People</h1><p>Register participants, and manage the mentors, coaches and helpers who support them.</p></div>';
   h += '<div class="grid g2"><div class="panel"><h2>Register a participant</h2>' +
-    '<p class="sub">Creates the account at Level 1 and assigns a mentor or coach.</p>' +
+    '<p class="sub">Creates the account at Foundation level and assigns a mentor or coach.</p>' +
     '<div class="field"><label class="f" for="rp-name">Full name</label><input id="rp-name" placeholder="First and last name"></div>' +
     '<div class="grid g2"><div class="field"><label class="f" for="rp-age">Age</label><input id="rp-age" type="number" min="5" max="20" placeholder="5\u201320"></div>' +
     '<div class="field"><label class="f" for="rp-school">School or group</label><input id="rp-school"></div></div>' +
@@ -1523,10 +1806,10 @@ function vAdminPeople(){
 
 function vAdminStructure(){
   let h = '<div class="pagehead"><h1>Programme structure</h1><p>Changes here apply to every participant. ' +
-    'Adding an objective to an area means anyone holding that badge keeps it, but new badges need the extra objective.</p></div>';
+    'Adding an objective to a pillar means anyone holding that badge keeps it, but new badges need the extra objective.</p></div>';
   PROGRAM.levels.forEach(function(l){
-    h += '<div class="panel"><div class="spread"><div><h2>' + esc(l.title) + " \u00b7 " + esc(l.camp) + "</h2>" +
-      '<p class="sub" style="margin:2px 0 0">' + esc(l.ages) + " \u00b7 " + l.areas.length + " developmental areas</p></div>" +
+    h += '<div class="panel"><div class="spread"><div><h2>' + esc(l.title) + " \u00b7 " + esc(l.badgeName) + "</h2>" +
+      '<p class="sub" style="margin:2px 0 0">\u201c' + esc(l.identity) + "\u201d \u00b7 " + l.areas.length + " core pillars</p></div>" +
       '<span class="chip">' + l.areas.reduce(function(n,a){ return n+a.objectives.length; },0) + " objectives</span></div>";
     l.areas.forEach(function(a){
       h += '<div class="divider"></div><div class="spread"><div class="row" style="gap:10px">' +
@@ -1562,13 +1845,13 @@ function vAdminReports(){
   });
   h += "</div>";
 
-  h += '<div class="panel"><h2>Badges awarded per area</h2><p class="sub">Where the cohort is progressing, and where it stalls.</p><table>' +
-    "<thead><tr><th>Level</th><th>Area</th><th>Badge</th><th>Awarded</th><th>Objectives met</th></tr></thead><tbody>";
+  h += '<div class="panel"><h2>Badges awarded per pillar</h2><p class="sub">Where the cohort is progressing, and where it stalls.</p><table>' +
+    "<thead><tr><th>Level</th><th>Pillar</th><th>Badge</th><th>Awarded</th><th>Objectives met</th></tr></thead><tbody>";
   allAreas().forEach(function(x){
     const earned = ps.filter(function(p){ return prog(p.id).badges.indexOf(x.area.id)>-1; }).length;
     const metCount = ps.reduce(function(n,p){ return n + x.area.objectives.filter(function(o){ return prog(p.id).met.indexOf(o.id)>-1; }).length; },0);
     const totalPoss = ps.length * x.area.objectives.length;
-    h += "<tr><td>" + x.level.id + "</td><td>" + esc(x.area.name) + "</td><td>" + esc(x.area.badge) + "</td>" +
+    h += "<tr><td>" + esc(x.level.title) + "</td><td>" + esc(x.area.name) + "</td><td>" + esc(x.area.badge) + "</td>" +
       "<td>" + earned + " of " + ps.length + "</td><td>" + metCount + " of " + totalPoss + "</td></tr>";
   });
   h += "</tbody></table></div>";
@@ -1607,11 +1890,11 @@ function vAdminLog(){
 function modalArea(areaId){
   const fa = findArea(areaId);
   const pid = me().role==="participant" ? me().id : state.focusParticipant;
-  if(!fa || !pid || !prog(pid)) return closable("Open a participant to see their progress in this area.");
+  if(!fa || !pid || !prog(pid)) return closable("Open a participant to see their progress in this pillar.");
   const pr = prog(pid), earned = pr.badges.indexOf(areaId)>-1, ap = areaProgress(pid, areaId);
   const related = goalsOf(pid).filter(function(g){ return g.areaId===areaId; });
   let h = '<div class="spread"><div class="row" style="gap:12px">' + medallion(fa.area, earned, "", earned?"\u2713":"") +
-    "<div><h2>" + esc(fa.area.badge) + " badge</h2><span class=\"small muted\">" + esc(fa.area.gloss) + " \u00b7 " +
+    "<div><h2>" + esc(fa.area.badge) + "</h2><span class=\"small muted\">" + esc(fa.area.gloss) + " \u00b7 " +
     esc(fa.level.title) + " \u00b7 " + esc(fa.area.name) + "</span></div></div>" +
     "<button class=\"x\" data-act=\"closeModal\" aria-label=\"Close\">\u2715</button></div>";
   h += '<div class="divider"></div><div class="spread small"><b>' + ap.done + " of " + ap.total + " objectives met</b>" +
@@ -1624,13 +1907,13 @@ function modalArea(areaId){
       '<div class="grow small">' + esc(o.text) + "</div></div>";
   });
   h += "</div>";
-  h += '<h3 style="margin-top:16px">Goals in this area</h3>';
+  h += '<h3 style="margin-top:16px">Goals in this pillar</h3>';
   if(related.length){
     h += '<div class="list" style="margin-top:8px">' + related.map(function(g){
       return '<div class="item"><div class="grow small"><b>' + esc(g.title) + "</b></div>" + goalChip(g) +
         '<button class="linkish small" data-act="goal" data-id="' + g.id + '">Open</button></div>'; }).join("") + "</div>";
   } else {
-    h += '<p class="small muted">No goals set in this area yet.</p>';
+    h += '<p class="small muted">No goals set in this pillar yet.</p>';
   }
   return h;
 }
@@ -1747,7 +2030,7 @@ function vGate(){
   let h = '<div class="gate"><div class="gatebox"><header>' +
     '<div class="row" style="justify-content:center;gap:10px;margin-bottom:12px">' +
     '<span class="medal">\u2605</span></div>' +
-    "<h1>Youth Achievement Award</h1><p>Four levels, four developmental areas in each, one badge per area. " +
+    "<h1>Youth Achievement Award</h1><p>Four levels \u2014 Foundation, Growth, Leadership and Purpose \u2014 with four core pillars in each. " +
     "Choose how you are signing in \u2014 what you can see and change depends on your role.</p></header>";
   if(!state.gateRole){
     h += '<div class="roles">' + ["participant","mentor","helper","admin"].map(function(r){
@@ -1765,7 +2048,7 @@ function vGate(){
       '<button class="linkish" style="color:#F2C94C" data-act="gateRole" data-id="">Change role</button></div>' +
       '<div class="picker">' + list.map(function(u){
         const sub = u.role==="participant"
-          ? "Age " + u.age + " \u00b7 " + PROGRAM.levels[prog(u.id).level-1].camp + " \u00b7 " + prog(u.id).badges.length + " badges"
+          ? "Age " + u.age + " \u00b7 " + PROGRAM.levels[prog(u.id).level-1].title + " \u00b7 " + prog(u.id).badges.length + " badges"
           : u.title + " since " + u.since;
         return '<button class="pick" data-act="signIn" data-id="' + u.id + '">' + avatar(u) +
           '<span class="grow"><b>' + esc(u.name) + "</b><span>" + esc(sub) + "</span></span>" +
@@ -1838,7 +2121,8 @@ function adminToggleObjective(pid, objId){
     return findArea(aid).area.objectives.every(function(o){ return p.met.indexOf(o.id)>-1; });
   });
   p.awards = p.awards.filter(function(lid){
-    return PROGRAM.levels[lid-1].areas.every(function(a){ return p.badges.indexOf(a.id)>-1; });
+    return PROGRAM.levels[lid-1].areas.every(function(a){ return p.badges.indexOf(a.id)>-1; }) &&
+           hasReflection(pid, lid) && hasChallenge(pid, lid);
   });
   const top = p.awards.length ? Math.max.apply(null, p.awards) : 0;
   p.level = Math.min(4, Math.max(1, top + 1));
@@ -1866,6 +2150,8 @@ document.addEventListener("click", function(ev){
     case "closeModal":state.modal = null; render(); break;
     case "comment":   ACT.comment(el.getAttribute("data-kind"), id); break;
     case "recordTask":ACT.recordTask(id, res); break;
+    case "submitReflection": ACT.submitReflection(id); break;
+    case "recordChallenge":  ACT.recordChallenge(id, obj); break;
     case "editObjective":   ACT.editObjective(id, obj); break;
     case "removeObjective": ACT.removeObjective(id, obj); break;
     case "proposeGoal": case "setGoal": case "assignTask": case "registerParticipant": case "addStaff":
